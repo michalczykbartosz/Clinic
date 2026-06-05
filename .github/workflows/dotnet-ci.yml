@@ -1,0 +1,29 @@
+name: .NET 10 CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout kodu
+      uses: actions/checkout@v4
+
+    - name: Konfiguracja środowiska .NET 10
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Przywracanie zależności (Restore)
+      run: dotnet restore
+
+    - name: Budowanie solucji (Build)
+      run: dotnet build --no-restore --configuration Release
+
+    - name: Uruchamianie testów NUnit (Test)
+      run: dotnet test --no-build --configuration Release
