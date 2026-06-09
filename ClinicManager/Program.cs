@@ -43,8 +43,11 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+
 app.UseHttpsRedirection();
 app.UseRouting();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
@@ -55,5 +58,25 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+var scopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+using (var scope = scopeFactory.CreateScope())
+{
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
+    string adminRole = "Admin";
+    
+    if (!await roleManager.RoleExistsAsync(adminRole))
+    {
+        await roleManager.CreateAsync(new IdentityRole(adminRole));
+    }
+    
+    string adminEmail = "admin@wp.pl"; 
+    var user = await userManager.FindByEmailAsync(adminEmail);
+    
+    if (user != null && !await userManager.IsInRoleAsync(user, adminRole))
+    {
+        await userManager.AddToRoleAsync(user, adminRole);
+    }
+}
 app.Run();

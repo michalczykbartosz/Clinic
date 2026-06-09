@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClinicManager.Migrations
 {
     [DbContext(typeof(ClinicDbContext))]
-    [Migration("20260609154200_NewRolePacjent")]
-    partial class NewRolePacjent
+    [Migration("20260609230519_SeedRole")]
+    partial class SeedRole
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -354,6 +354,13 @@ namespace ClinicManager.Migrations
                             ConcurrencyStamp = "test",
                             Name = "Pacjent",
                             NormalizedName = "PACJENT"
+                        },
+                        new
+                        {
+                            Id = "2",
+                            ConcurrencyStamp = "test",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
                         });
                 });
 

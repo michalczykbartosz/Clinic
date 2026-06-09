@@ -38,6 +38,9 @@ public class ClinicDbContext : IdentityDbContext
             new Medication { MedicationId = 1, Name = "Ibuprom Max", Manufacturer = "US Pharmacia", Dose = "400mg" });
         
         modelBuilder.Entity<IdentityRole>().HasData(
-            new IdentityRole { Id = "1", Name = "Pacjent", NormalizedName = "PACJENT",ConcurrencyStamp = "test"}); 
+            new IdentityRole { Id = "1", Name = "Pacjent", NormalizedName = "PACJENT",ConcurrencyStamp = "test"});
+        modelBuilder.Entity<IdentityRole>().HasData(
+            new IdentityRole { Id = "2", Name = "Admin", NormalizedName = "ADMIN", ConcurrencyStamp = "test" });
     }
+    
 }
