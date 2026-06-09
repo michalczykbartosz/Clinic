@@ -1,14 +1,24 @@
 using ClinicManager.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;  
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+//dodanie serwisu bazy danych
 builder.Services.AddDbContext<ClinicDbContext>(x => x.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
+//dodanie serwisu ASP.NET Identity
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options=>
+{
+    options.Password.RequiredLength = 10;
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.User.RequireUniqueEmail = true;
+}).AddEntityFrameworkStores<ClinicDbContext>();
+    
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
