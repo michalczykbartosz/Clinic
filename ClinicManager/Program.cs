@@ -1,4 +1,6 @@
 using ClinicManager.Data;
+using ClinicManager.Mappers;
+using ClinicManager.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;  
 
@@ -18,6 +20,18 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options=>
     options.Lockout.MaxFailedAccessAttempts = 5;
     options.User.RequireUniqueEmail = true;
 }).AddEntityFrameworkStores<ClinicDbContext>();
+
+// Mapperly mappers
+builder.Services.AddScoped<PatientMapper>();
+builder.Services.AddScoped<DoctorMapper>();
+builder.Services.AddScoped<VisitMapper>();
+builder.Services.AddScoped<MedicationMapper>();
+
+// Business services
+builder.Services.AddScoped<IPatientService, PatientService>();
+builder.Services.AddScoped<IDoctorService, DoctorService>();
+builder.Services.AddScoped<IVisitService, VisitService>();
+builder.Services.AddScoped<IMedicationService, MedicationService>();
     
 var app = builder.Build();
 
