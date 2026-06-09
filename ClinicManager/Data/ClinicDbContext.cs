@@ -1,9 +1,11 @@
 ﻿using ClinicManager.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace ClinicManager.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
-public class ClinicDbContext : DbContext
+public class ClinicDbContext : IdentityDbContext
 {
     public ClinicDbContext(DbContextOptions<ClinicDbContext> options) : base(options)
     {
@@ -34,5 +36,8 @@ public class ClinicDbContext : DbContext
 
         modelBuilder.Entity<Medication>().HasData(
             new Medication { MedicationId = 1, Name = "Ibuprom Max", Manufacturer = "US Pharmacia", Dose = "400mg" });
+        
+        modelBuilder.Entity<IdentityRole>().HasData(
+            new IdentityRole { Id = "1", Name = "Pacjent", NormalizedName = "PACJENT",ConcurrencyStamp = "test"}); 
     }
 }

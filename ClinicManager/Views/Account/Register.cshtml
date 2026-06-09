@@ -1,0 +1,29 @@
+﻿@model ClinicManager.DTOs.RegisterViewModel
+
+<form asp-action="Register" method="post">
+    <div asp-validation-summary="ModelOnly"></div>
+    <div>
+        <label asp-for="Email"></label>
+        <input asp-for="Email"/>
+        <span asp-validation-for="Email"></span>
+    </div>
+    <div>
+        <label asp-for="Pesel"></label>
+        <input asp-for="Pesel"/>
+        <span asp-validation-for="Pesel"></span> 
+    </div>
+    <div>
+        <label asp-for="Password"></label>
+        <input asp-for="Password"/>
+        <span asp-validation-for="Password"></span> 
+    </div>
+    <div>
+    <label asp-for="PasswordConfirm"></label>
+    <input asp-for="PasswordConfirm"/>
+    <span asp-validation-for="PasswordConfirm"></span> 
+    </div>
+    <button type="submit">Zarejestruj</button>
+    
+
+</form>
+
