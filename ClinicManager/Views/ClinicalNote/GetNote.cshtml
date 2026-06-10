@@ -1,0 +1,7 @@
+﻿@model ClinicManager.DTOs.ClinicalNoteViewModel
+
+<form asp-action="CreateOrUpdateNote" method="post">
+    <input type="hidden" name="visitId" value="@Model.VisitId"></input>
+    <textarea name="newNote">@Model.Note?.Note</textarea>
+    <button type="submit">Zapisz</button>
+</form>

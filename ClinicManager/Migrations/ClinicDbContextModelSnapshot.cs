@@ -316,6 +316,24 @@ namespace ClinicManager.Migrations
                     b.HasIndex("PatientId");
 
                     b.ToTable("Visits");
+
+                    b.HasData(
+                        new
+                        {
+                            VisitId = 1,
+                            DoctorId = 1,
+                            PatientId = 1,
+                            VisitDateTime = new DateTime(2026, 6, 15, 14, 0, 0, 0, DateTimeKind.Unspecified),
+                            VisitStatus = 0
+                        },
+                        new
+                        {
+                            VisitId = 2,
+                            DoctorId = 2,
+                            PatientId = 1,
+                            VisitDateTime = new DateTime(2026, 6, 10, 10, 30, 0, 0, DateTimeKind.Unspecified),
+                            VisitStatus = 1
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

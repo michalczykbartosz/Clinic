@@ -41,6 +41,9 @@ public class ClinicDbContext : IdentityDbContext
             new IdentityRole { Id = "1", Name = "Pacjent", NormalizedName = "PACJENT",ConcurrencyStamp = "test"});
         modelBuilder.Entity<IdentityRole>().HasData(
             new IdentityRole { Id = "2", Name = "Admin", NormalizedName = "ADMIN", ConcurrencyStamp = "test" });
+        modelBuilder.Entity<Visit>().HasData(
+            new Visit { VisitId = 1, VisitStatus = VisitState.Planned, PatientId = 1, DoctorId = 1, VisitDateTime = new DateTime(2026, 6, 15, 14, 0, 0) },
+            new Visit { VisitId = 2, VisitStatus = VisitState.InProgress, PatientId = 1, DoctorId = 2, VisitDateTime = new DateTime(2026, 6, 10, 10, 30, 0) });
     }
     
 }
