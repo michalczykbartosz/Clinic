@@ -1,0 +1,20 @@
+﻿@model ClinicManager.DTOs.UserRolesViewModel
+
+<form asp-action="EditRoles" method="post">
+    <input type="hidden" asp-for="Id" />
+    <div>
+        <p>Edytujesz użytkownika: <strong>@Model.Email</strong></p>
+    </div>
+    <h3>Role w systemie:</h3>
+    @foreach (var role in Model.AllRoles)
+    {
+        <div>
+            <input type="checkbox" name="roleNames" value="@role" 
+                   @(Model.Roles.Contains(role) ? "checked" : "") />
+            <label>@role</label>
+        </div>
+    }
+    <div>
+        <button type="submit">Zapisz zmiany</button>
+    </div>
+</form>

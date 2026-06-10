@@ -351,6 +351,13 @@ namespace ClinicManager.Migrations
                             ConcurrencyStamp = "test",
                             Name = "Pacjent",
                             NormalizedName = "PACJENT"
+                        },
+                        new
+                        {
+                            Id = "2",
+                            ConcurrencyStamp = "test",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
                         });
                 });
 
