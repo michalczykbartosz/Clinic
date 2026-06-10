@@ -2,7 +2,7 @@
 
 namespace ClinicManager.DTOs;
 
-public class LoginViewModel
+public class LoginDto
 {
     [Required(ErrorMessage="Email jest wymagany!")]
     [EmailAddress(ErrorMessage = "Zły format adresu e-mail!")]

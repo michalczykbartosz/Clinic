@@ -1,18 +1,16 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ClinicManager.DTOs;
+using ClinicManager.Services;
 
 namespace ClinicManager.Controllers;
 
 public class AccountController : Controller
 {
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly IAuthenticationService _authService;
 
-    public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+    public AccountController(IAuthenticationService authService)
     {
-        _userManager = userManager;
-        _signInManager = signInManager;
+        _authService = authService;
     }
 
     [HttpGet]
@@ -22,30 +20,19 @@ public class AccountController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Register(RegisterViewModel model)
+    public async Task<IActionResult> Register(RegisterDto model)
     {
         if (!ModelState.IsValid) return View(model);
         
-        IdentityUser user = new IdentityUser();
+        var (success, errors) = await _authService.RegisterAsync(model);
+        
+        if (success) return RedirectToAction("Index", "Home");
 
-        user.UserName = model.Email;
-        user.Email = model.Email;
-
-        var result = await _userManager.CreateAsync(user, model.Password);
-        if (result.Succeeded)
+        foreach (var error in errors)
         {
-            await _userManager.AddToRoleAsync(user, "Pacjent");
-            await _signInManager.SignInAsync(user, isPersistent: false);
-            return RedirectToAction("Index", "Home");
-
-        }
-
-        foreach (var oneError in result.Errors)
-        {
-            ModelState.AddModelError(string.Empty, oneError.Description);
+            ModelState.AddModelError(string.Empty, error);
         }
         return View(model);
-
     }
 
     [HttpGet]
@@ -56,26 +43,27 @@ public class AccountController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Login(LoginViewModel model)
+    public async Task<IActionResult> Login(LoginDto model)
     {
         if (User.Identity != null && User.Identity.IsAuthenticated) return RedirectToAction("Index", "Home");
 
         if (!ModelState.IsValid) return View(model);
-        var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, false, true);
-        if (result.Succeeded)
+        
+        var (success, errorMessage) = await _authService.LoginAsync(model.Email, model.Password);
+        
+        if (success)
         {
             return RedirectToAction("Index", "Home");
         }
-        ModelState.AddModelError(string.Empty,"Nieprawidłowy login lub hasło!");
+
+        ModelState.AddModelError(string.Empty, errorMessage);
         return View(model);
     }
 
     [HttpPost]
     public async Task<IActionResult> Logout()
     {
-        await _signInManager.SignOutAsync();
+        await _authService.LogoutAsync();
         return RedirectToAction("Index", "Home");
     }
-    
-    
 }

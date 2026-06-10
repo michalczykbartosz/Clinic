@@ -1,7 +1,41 @@
-﻿@model ClinicManager.DTOs.ClinicalNoteViewModel
+﻿@model ClinicManager.DTOs.ClinicalNoteDto
 
-<form asp-action="CreateOrUpdateNote" method="post">
-    <input type="hidden" name="visitId" value="@Model.VisitId"></input>
-    <textarea name="newNote">@Model.Note?.Note</textarea>
-    <button type="submit">Zapisz</button>
-</form>
+@{
+    ViewData["Title"] = "Notatka kliniczna";
+}
+
+<div class="container mt-4">
+    <h2>Notatka kliniczna</h2>
+    <h4 class="text-muted">Wizyta ID: @Model.VisitId</h4>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-10">
+            <form asp-action="SaveNote" method="post">
+                <!-- Podsumowanie błędów walidacji (np. błędy z serwera przekazane przez ModelState) -->
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                
+                <!-- Ukryte pole przechowujące identyfikator wizyty -->
+                <input type="hidden" asp-for="VisitId" />
+
+                <!-- Obszar tekstowy dla notatki -->
+                <div class="form-group mb-4">
+                    <label asp-for="Note" class="form-label fw-bold">Treść notatki medycznej</label>
+                    <textarea asp-for="Note" class="form-control" rows="12" placeholder="Wprowadź szczegółowy opis wizyty, zalecenia i diagnozę..."></textarea>
+                    <span asp-validation-for="Note" class="text-danger"></span>
+                </div>
+
+                <!-- Przyciski akcji -->
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary px-4 me-2">Zapisz notatkę</button>
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Anuluj</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Dołączenie walidacji po stronie klienta (jQuery Validation) -->
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

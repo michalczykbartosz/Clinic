@@ -4,7 +4,7 @@ namespace ClinicManager.DTOs;
 
 
 
-public class RegisterViewModel
+public class RegisterDto
 {
     [Required(ErrorMessage="Adres e-mail jest wymagany!")]
     [EmailAddress(ErrorMessage="Zły format adresu e-mail!")]

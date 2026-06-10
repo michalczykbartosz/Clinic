@@ -1,18 +1,30 @@
-﻿@model ClinicManager.DTOs.LoginViewModel
+﻿@model ClinicManager.DTOs.LoginDto
+
+@{
+    ViewData["Title"] = "Logowanie";
+    Layout = "_Layout";
+}
+
+<h2>Logowanie</h2>
 
 <form asp-action="Login" method="post">
-    <div asp-validation-summary="ModelOnly"></div>
-    
-    <div>
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="form-group">
         <label asp-for="Email"></label>
-        <input asp-for="Email"/>
-        <span asp-validation-for="Email"></span>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
     </div>
-    <div>
+
+    <div class="form-group">
         <label asp-for="Password"></label>
-        <input asp-for="Password"/>
-        <span asp-validation-for="Password"></span>
+        <input asp-for="Password" class="form-control" />
+        <span asp-validation-for="Password" class="text-danger"></span>
     </div>
-    <button type="submit">Zaloguj</button>
-    
+
+    <button type="submit" class="btn btn-primary">Zaloguj</button>
 </form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
