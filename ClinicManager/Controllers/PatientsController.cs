@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicManager.Controllers;
 
-[Authorize(Roles = "Admin,Rejestratorka")]
+[Authorize]
 public class PatientsController : Controller
 {
     private readonly IPatientService _patientService;
@@ -18,13 +18,17 @@ public class PatientsController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index(CancellationToken cancellationToken)
+    [Authorize(Roles = "Admin,Rejestratorka,Lekarz")]
+    public async Task<IActionResult> Index(string? query, CancellationToken cancellationToken)
     {
-        var patients = await _patientService.GetAllAsync(cancellationToken);
+        ViewData["Query"] = query;
+
+        var patients = await _patientService.SearchAsync(query, cancellationToken);
         return View(patients);
     }
 
     [HttpGet]
+    [Authorize(Roles = "Admin,Rejestratorka,Lekarz")]
     public async Task<IActionResult> Details(int id, CancellationToken cancellationToken)
     {
         var patient = await _patientService.GetByIdAsync(id, cancellationToken);
@@ -37,12 +41,14 @@ public class PatientsController : Controller
     }
 
     [HttpGet]
+    [Authorize(Roles = "Admin,Rejestratorka")]
     public IActionResult Create()
     {
         return View(new UpsertPatientDto());
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin,Rejestratorka")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(UpsertPatientDto model, CancellationToken cancellationToken)
     {
@@ -58,6 +64,7 @@ public class PatientsController : Controller
     }
 
     [HttpGet]
+    [Authorize(Roles = "Admin,Rejestratorka")]
     public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
     {
         var patient = await _patientService.GetByIdAsync(id, cancellationToken);
@@ -70,6 +77,7 @@ public class PatientsController : Controller
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin,Rejestratorka")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, UpsertPatientDto model, CancellationToken cancellationToken)
     {
@@ -89,6 +97,7 @@ public class PatientsController : Controller
     }
 
     [HttpGet]
+    [Authorize(Roles = "Admin,Rejestratorka")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         var patient = await _patientService.GetByIdAsync(id, cancellationToken);
@@ -101,6 +110,7 @@ public class PatientsController : Controller
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin,Rejestratorka")]
     [ActionName("Delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id, CancellationToken cancellationToken)

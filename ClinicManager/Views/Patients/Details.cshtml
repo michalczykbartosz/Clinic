@@ -2,13 +2,17 @@
 
 @{
     ViewData["Title"] = "Szczegóły pacjenta";
+    var canManagePatients = User.IsInRole("Admin") || User.IsInRole("Rejestratorka");
 }
 
 <div class="d-flex align-items-center justify-content-between mb-3">
     <h1 class="h3 mb-0">Szczegóły pacjenta</h1>
     <div class="d-flex gap-2">
         <a class="btn btn-outline-secondary" asp-action="Index">Powrót</a>
-        <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.PatientId">Edytuj</a>
+        @if (canManagePatients)
+        {
+            <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.PatientId">Edytuj</a>
+        }
     </div>
 </div>
 
@@ -34,4 +38,7 @@
     <dd class="col-sm-9">@Model.BirthDate.ToString("dd.MM.yyyy")</dd>
 </dl>
 
-<a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.PatientId">Usuń pacjenta</a>
+@if (canManagePatients)
+{
+    <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.PatientId">Usuń pacjenta</a>
+}

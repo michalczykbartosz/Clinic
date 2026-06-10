@@ -26,11 +26,14 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
-                        @if (User.IsInRole("Admin") || User.IsInRole("Rejestratorka"))
+                        @if (User.IsInRole("Admin") || User.IsInRole("Rejestratorka") || User.IsInRole("Lekarz"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Patients" asp-action="Index">Pacjenci</a>
                             </li>
+                        }
+                        @if (User.IsInRole("Admin") || User.IsInRole("Rejestratorka"))
+                        {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="AdminUsers" asp-action="GetRoles">Konta</a>
                             </li>
