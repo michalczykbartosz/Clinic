@@ -8,4 +8,5 @@ namespace ClinicManager.Mappers;
 public partial class MedicationMapper
 {
     public partial MedicationDto ToDto(Medication medication);
+    public partial Medication ToEntity(MedicationDto medicationDto);
 }
