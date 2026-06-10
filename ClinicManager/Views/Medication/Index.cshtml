@@ -1,0 +1,46 @@
+﻿@model IReadOnlyList<ClinicManager.DTOs.MedicationDto>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Leki</h2>
+        <a asp-action="Save" class="btn btn-primary">Dodaj lek</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+            <tr>
+                <th>Nazwa leku</th>
+                <th>Dawka</th>
+                <th>Producent</th>
+                <th class="text-end">Akcje</th>
+            </tr>
+            </thead>
+            <tbody>
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var med in Model)
+                {
+                    <tr>
+                        <td class="fw-bold">@med.Name</td>
+                        <td>@med.Dose</td>
+                        <td>@med.Manufacturer</td>
+                        <td class="text-end">
+                            <div class="btn-group" role="group">
+                                <a asp-action="Edit" asp-route-medicationId="@med.MedicationId" class="btn btn-outline-primary btn-sm">Edytuj</a>
+                                <a asp-action="Delete" asp-route-medicationId="@med.MedicationId" class="btn btn-outline-danger btn-sm">Usuń</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" class="text-center text-muted">Brak leków w katalogu.</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

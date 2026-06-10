@@ -1,0 +1,41 @@
+﻿@model ClinicManager.DTOs.MedicationDto
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Dodaj nowy lek</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Save" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label">Nazwa leku</label>
+                            <input asp-for="Name" class="form-control" placeholder="np. Paracetamol" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Dose" class="form-label">Dawka</label>
+                            <input asp-for="Dose" class="form-control" placeholder="np. 500mg" />
+                            <span asp-validation-for="Dose" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Manufacturer" class="form-label">Producent</label>
+                            <input asp-for="Manufacturer" class="form-control" placeholder="np. Polpharma" />
+                            <span asp-validation-for="Manufacturer" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-action="Index" class="btn btn-secondary">Anuluj</a>
+                            <button type="submit" class="btn btn-success">Zapisz lek</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

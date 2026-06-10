@@ -1,5 +1,6 @@
 using ClinicManager.Data;
 using ClinicManager.DTOs;
+using ClinicManager.Models;
 using ClinicManager.Mappers;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,5 +34,22 @@ public class MedicationService : IMedicationService
             .FirstOrDefaultAsync(medication => medication.MedicationId == medicationId, cancellationToken);
 
         return medication is null ? null : _medicationMapper.ToDto(medication);
+    }
+
+    public async Task<(bool success, string errorMessage)> AddMedicationAsync(MedicationDto newMedicationDto)
+    {
+        Medication newMedication = _medicationMapper.ToEntity(newMedicationDto);
+        await _dbContext.Medications.AddAsync(newMedication);
+        await _dbContext.SaveChangesAsync();
+        return (true, "");
+
+    }
+
+    public async Task<(bool success, string errorMessage)> UpdateMedicationAsync(MedicationDto newMedicationDto)
+    {
+        Medication newMedication = _medicationMapper.ToEntity(newMedicationDto);
+        _dbContext.Medications.Update(newMedication);
+        await _dbContext.SaveChangesAsync();
+        return (true, "");
     }
 }
