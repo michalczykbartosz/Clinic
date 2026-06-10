@@ -26,12 +26,16 @@ builder.Services.AddScoped<PatientMapper>();
 builder.Services.AddScoped<DoctorMapper>();
 builder.Services.AddScoped<VisitMapper>();
 builder.Services.AddScoped<MedicationMapper>();
+builder.Services.AddScoped<ClinicalNoteMapper>();
 
 // Business services
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IDoctorService, DoctorService>();
 builder.Services.AddScoped<IVisitService, VisitService>();
 builder.Services.AddScoped<IMedicationService, MedicationService>();
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IUserManagementService, UserManagementService>();
+builder.Services.AddScoped<IClinicalNoteService, ClinicalNoteService>();
     
 var app = builder.Build();
 

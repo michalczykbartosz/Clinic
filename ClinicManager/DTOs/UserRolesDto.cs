@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicManager.DTOs;
 
-public class UserRolesViewModel
+public class UserRolesDto
 {
     
 

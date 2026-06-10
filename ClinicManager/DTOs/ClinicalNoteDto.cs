@@ -1,8 +1,8 @@
 ﻿using ClinicManager.Models;
 namespace ClinicManager.DTOs;
 
-public class ClinicalNoteViewModel
+public class ClinicalNoteDto
 {
     public int VisitId { get; set; }
-    public ClinicalNote Note { get; set; } 
+    public string Note { get; set; } 
 }
