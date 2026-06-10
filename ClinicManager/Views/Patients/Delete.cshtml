@@ -1,0 +1,33 @@
+@model ClinicManager.DTOs.PatientDto
+
+@{
+    ViewData["Title"] = "Usuń pacjenta";
+}
+
+<h1 class="h3 mb-3">Usuń pacjenta</h1>
+
+<div class="alert alert-warning" role="alert">
+    Czy na pewno chcesz usunąć pacjenta @Model.FirstName @Model.LastName?
+</div>
+
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+<dl class="row">
+    <dt class="col-sm-3">Imię</dt>
+    <dd class="col-sm-9">@Model.FirstName</dd>
+
+    <dt class="col-sm-3">Nazwisko</dt>
+    <dd class="col-sm-9">@Model.LastName</dd>
+
+    <dt class="col-sm-3">PESEL</dt>
+    <dd class="col-sm-9">@Model.PESEL</dd>
+
+    <dt class="col-sm-3">Numer ubezpieczenia</dt>
+    <dd class="col-sm-9">@Model.InsuranceNumber</dd>
+</dl>
+
+<form asp-action="Delete" method="post" class="d-flex gap-2">
+    <input type="hidden" name="id" value="@Model.PatientId" />
+    <button type="submit" class="btn btn-danger">Usuń</button>
+    <a class="btn btn-outline-secondary" asp-action="Index">Anuluj</a>
+</form>

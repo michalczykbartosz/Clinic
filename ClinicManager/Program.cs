@@ -64,19 +64,22 @@ using (var scope = scopeFactory.CreateScope())
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-    string adminRole = "Admin";
-    
-    if (!await roleManager.RoleExistsAsync(adminRole))
+    string[] requiredRoles = ["Admin", "Lekarz", "Rejestratorka", "Pacjent"];
+
+    foreach (var role in requiredRoles)
     {
-        await roleManager.CreateAsync(new IdentityRole(adminRole));
+        if (!await roleManager.RoleExistsAsync(role))
+        {
+            await roleManager.CreateAsync(new IdentityRole(role));
+        }
     }
     
     string adminEmail = "admin@wp.pl"; 
     var user = await userManager.FindByEmailAsync(adminEmail);
     
-    if (user != null && !await userManager.IsInRoleAsync(user, adminRole))
+    if (user != null && !await userManager.IsInRoleAsync(user, "Admin"))
     {
-        await userManager.AddToRoleAsync(user, adminRole);
+        await userManager.AddToRoleAsync(user, "Admin");
     }
 }
 app.Run();

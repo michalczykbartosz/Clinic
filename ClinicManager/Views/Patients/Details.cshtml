@@ -1,0 +1,37 @@
+@model ClinicManager.DTOs.PatientDto
+
+@{
+    ViewData["Title"] = "Szczegóły pacjenta";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="h3 mb-0">Szczegóły pacjenta</h1>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" asp-action="Index">Powrót</a>
+        <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.PatientId">Edytuj</a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success" role="alert">@successMessage</div>
+}
+
+<dl class="row">
+    <dt class="col-sm-3">Imię</dt>
+    <dd class="col-sm-9">@Model.FirstName</dd>
+
+    <dt class="col-sm-3">Nazwisko</dt>
+    <dd class="col-sm-9">@Model.LastName</dd>
+
+    <dt class="col-sm-3">PESEL</dt>
+    <dd class="col-sm-9">@Model.PESEL</dd>
+
+    <dt class="col-sm-3">Numer ubezpieczenia</dt>
+    <dd class="col-sm-9">@Model.InsuranceNumber</dd>
+
+    <dt class="col-sm-3">Data urodzenia</dt>
+    <dd class="col-sm-9">@Model.BirthDate.ToString("dd.MM.yyyy")</dd>
+</dl>
+
+<a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.PatientId">Usuń pacjenta</a>
