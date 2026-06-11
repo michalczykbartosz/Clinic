@@ -29,6 +29,26 @@ public class VisitService : IVisitService
         return visits.Select(_visitMapper.ToDto).ToList();
     }
 
+    public async Task<IReadOnlyList<VisitListItemDto>> GetListAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Visits
+            .AsNoTracking()
+            .OrderBy(visit => visit.VisitDateTime)
+            .Select(visit => new VisitListItemDto
+            {
+                VisitId = visit.VisitId,
+                VisitStatus = visit.VisitStatus,
+                VisitDateTime = visit.VisitDateTime,
+                PatientId = visit.PatientId,
+                PatientFullName = visit.Patient.FirstName + " " + visit.Patient.LastName,
+                PatientPESEL = visit.Patient.PESEL,
+                DoctorId = visit.DoctorId,
+                DoctorFullName = visit.Doctor.FirstName + " " + visit.Doctor.LastName,
+                DoctorSpecialization = visit.Doctor.Specialization
+            })
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<VisitDto?> GetByIdAsync(int visitId, CancellationToken cancellationToken = default)
     {
         var visit = await _dbContext.Visits
