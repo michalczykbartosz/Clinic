@@ -1,0 +1,48 @@
+@model ClinicManager.ViewModels.CreateVisitViewModel
+
+@{
+    ViewData["Title"] = "Dodaj wizytę";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="h3 mb-0">Dodaj wizytę</h1>
+    <a class="btn btn-outline-secondary" asp-action="Index">Powrót</a>
+</div>
+
+<form asp-action="Create" method="post" class="row g-3">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="col-md-6">
+        <label asp-for="Visit.PatientId" class="form-label"></label>
+        <select asp-for="Visit.PatientId" asp-items="Model.Patients" class="form-select">
+            <option value="0">Wybierz pacjenta</option>
+        </select>
+        <span asp-validation-for="Visit.PatientId" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="Visit.DoctorId" class="form-label"></label>
+        <select asp-for="Visit.DoctorId" asp-items="Model.Doctors" class="form-select">
+            <option value="0">Wybierz lekarza</option>
+        </select>
+        <span asp-validation-for="Visit.DoctorId" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="Visit.VisitDateTime" class="form-label"></label>
+        <input asp-for="Visit.VisitDateTime"
+               asp-format="{0:yyyy-MM-ddTHH:mm}"
+               class="form-control"
+               type="datetime-local" />
+        <span asp-validation-for="Visit.VisitDateTime" class="text-danger"></span>
+    </div>
+
+    <div class="col-12 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Zapisz</button>
+        <a class="btn btn-outline-secondary" asp-action="Index">Anuluj</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

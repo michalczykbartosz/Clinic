@@ -1,0 +1,91 @@
+@using ClinicManager.Models
+@model IReadOnlyList<ClinicManager.DTOs.VisitListItemDto>
+
+@{
+    ViewData["Title"] = "Wizyty";
+    var canCreateVisit = User.IsInRole("Admin") || User.IsInRole("Rejestratorka");
+}
+
+@functions {
+    private static string GetVisitStatusLabel(VisitState status)
+    {
+        return status switch
+        {
+            VisitState.Planned => "Zaplanowana",
+            VisitState.InProgress => "W trakcie",
+            VisitState.Finished => "Zakończona",
+            VisitState.Canceled => "Anulowana",
+            _ => status.ToString()
+        };
+    }
+
+    private static string GetVisitStatusBadgeClass(VisitState status)
+    {
+        return status switch
+        {
+            VisitState.Planned => "bg-primary",
+            VisitState.InProgress => "bg-warning text-dark",
+            VisitState.Finished => "bg-success",
+            VisitState.Canceled => "bg-secondary",
+            _ => "bg-light text-dark"
+        };
+    }
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="h3 mb-0">Wizyty</h1>
+    @if (canCreateVisit)
+    {
+        <a class="btn btn-primary" asp-action="Create">Dodaj wizytę</a>
+    }
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success" role="alert">@successMessage</div>
+}
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info" role="alert">Brak wizyt w systemie.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Numer wizyty</th>
+                    <th>Data i godzina</th>
+                    <th>Status</th>
+                    <th>Pacjent</th>
+                    <th>PESEL</th>
+                    <th>Lekarz</th>
+                    <th>Specjalizacja</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var visit in Model)
+            {
+                <tr>
+                    <td>@visit.VisitId</td>
+                    <td>@visit.VisitDateTime.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td>
+                        <span class="badge @GetVisitStatusBadgeClass(visit.VisitStatus)">
+                            @GetVisitStatusLabel(visit.VisitStatus)
+                        </span>
+                    </td>
+                    <td>
+                        <a asp-controller="Patients" asp-action="Details" asp-route-id="@visit.PatientId">
+                            @visit.PatientFullName
+                        </a>
+                    </td>
+                    <td>@visit.PatientPESEL</td>
+                    <td>@visit.DoctorFullName</td>
+                    <td>@visit.DoctorSpecialization</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

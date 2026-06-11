@@ -6,6 +6,7 @@ namespace ClinicManager.Services;
 public interface IVisitService
 {
     Task<IReadOnlyList<VisitDto>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<VisitListItemDto>> GetListAsync(CancellationToken cancellationToken = default);
     Task<VisitDto?> GetByIdAsync(int visitId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<PatientVisitDto>> GetByPatientIdAsync(int patientId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ActiveVisitDto>> GetActiveVisitsAsync(CancellationToken cancellationToken = default);
