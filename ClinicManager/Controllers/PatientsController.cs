@@ -1,5 +1,6 @@
 using ClinicManager.DTOs;
 using ClinicManager.Services;
+using ClinicManager.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,11 +10,16 @@ namespace ClinicManager.Controllers;
 public class PatientsController : Controller
 {
     private readonly IPatientService _patientService;
+    private readonly IVisitService _visitService;
     private readonly ILogger<PatientsController> _logger;
 
-    public PatientsController(IPatientService patientService, ILogger<PatientsController> logger)
+    public PatientsController(
+        IPatientService patientService,
+        IVisitService visitService,
+        ILogger<PatientsController> logger)
     {
         _patientService = patientService;
+        _visitService = visitService;
         _logger = logger;
     }
 
@@ -37,7 +43,15 @@ public class PatientsController : Controller
             return NotFound();
         }
 
-        return View(patient);
+        var visits = await _visitService.GetByPatientIdAsync(id, cancellationToken);
+
+        var model = new PatientDetailsViewModel
+        {
+            Patient = patient,
+            Visits = visits
+        };
+
+        return View(model);
     }
 
     [HttpGet]
