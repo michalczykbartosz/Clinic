@@ -25,6 +25,16 @@ public class ActiveVisitDto
     public string DoctorSpecialization { get; set; } = string.Empty;
 }
 
+public class PatientVisitDto
+{
+    public int VisitId { get; set; }
+    public VisitState VisitStatus { get; set; }
+    public DateTime VisitDateTime { get; set; }
+    public int DoctorId { get; set; }
+    public string DoctorFullName { get; set; } = string.Empty;
+    public string DoctorSpecialization { get; set; } = string.Empty;
+}
+
 public class CreateVisitDto
 {
     [Required]

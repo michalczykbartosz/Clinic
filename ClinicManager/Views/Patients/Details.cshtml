@@ -1,8 +1,35 @@
-@model ClinicManager.DTOs.PatientDto
+@using ClinicManager.Models
+@model ClinicManager.ViewModels.PatientDetailsViewModel
 
 @{
     ViewData["Title"] = "Szczegóły pacjenta";
     var canManagePatients = User.IsInRole("Admin") || User.IsInRole("Rejestratorka");
+}
+
+@functions {
+    private static string GetVisitStatusLabel(VisitState status)
+    {
+        return status switch
+        {
+            VisitState.Planned => "Zaplanowana",
+            VisitState.InProgress => "W trakcie",
+            VisitState.Finished => "Zakończona",
+            VisitState.Canceled => "Anulowana",
+            _ => status.ToString()
+        };
+    }
+
+    private static string GetVisitStatusBadgeClass(VisitState status)
+    {
+        return status switch
+        {
+            VisitState.Planned => "bg-primary",
+            VisitState.InProgress => "bg-warning text-dark",
+            VisitState.Finished => "bg-success",
+            VisitState.Canceled => "bg-secondary",
+            _ => "bg-light text-dark"
+        };
+    }
 }
 
 <div class="d-flex align-items-center justify-content-between mb-3">
@@ -11,7 +38,7 @@
         <a class="btn btn-outline-secondary" asp-action="Index">Powrót</a>
         @if (canManagePatients)
         {
-            <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.PatientId">Edytuj</a>
+            <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Patient.PatientId">Edytuj</a>
         }
     </div>
 </div>
@@ -23,22 +50,63 @@
 
 <dl class="row">
     <dt class="col-sm-3">Imię</dt>
-    <dd class="col-sm-9">@Model.FirstName</dd>
+    <dd class="col-sm-9">@Model.Patient.FirstName</dd>
 
     <dt class="col-sm-3">Nazwisko</dt>
-    <dd class="col-sm-9">@Model.LastName</dd>
+    <dd class="col-sm-9">@Model.Patient.LastName</dd>
 
     <dt class="col-sm-3">PESEL</dt>
-    <dd class="col-sm-9">@Model.PESEL</dd>
+    <dd class="col-sm-9">@Model.Patient.PESEL</dd>
 
     <dt class="col-sm-3">Numer ubezpieczenia</dt>
-    <dd class="col-sm-9">@Model.InsuranceNumber</dd>
+    <dd class="col-sm-9">@Model.Patient.InsuranceNumber</dd>
 
     <dt class="col-sm-3">Data urodzenia</dt>
-    <dd class="col-sm-9">@Model.BirthDate.ToString("dd.MM.yyyy")</dd>
+    <dd class="col-sm-9">@Model.Patient.BirthDate.ToString("dd.MM.yyyy")</dd>
 </dl>
+
+<div class="d-flex align-items-center justify-content-between mt-4 mb-3">
+    <h2 class="h4 mb-0">Wizyty pacjenta</h2>
+</div>
+
+@if (Model.Visits.Count == 0)
+{
+    <div class="alert alert-info" role="alert">Pacjent nie ma jeszcze zarejestrowanych wizyt.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Numer wizyty</th>
+                    <th>Data i godzina</th>
+                    <th>Status</th>
+                    <th>Lekarz</th>
+                    <th>Specjalizacja</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var visit in Model.Visits)
+            {
+                <tr>
+                    <td>@visit.VisitId</td>
+                    <td>@visit.VisitDateTime.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td>
+                        <span class="badge @GetVisitStatusBadgeClass(visit.VisitStatus)">
+                            @GetVisitStatusLabel(visit.VisitStatus)
+                        </span>
+                    </td>
+                    <td>@visit.DoctorFullName</td>
+                    <td>@visit.DoctorSpecialization</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
 
 @if (canManagePatients)
 {
-    <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.PatientId">Usuń pacjenta</a>
+    <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Patient.PatientId">Usuń pacjenta</a>
 }

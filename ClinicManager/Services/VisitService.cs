@@ -38,15 +38,22 @@ public class VisitService : IVisitService
         return visit is null ? null : _visitMapper.ToDto(visit);
     }
 
-    public async Task<IReadOnlyList<VisitDto>> GetByPatientIdAsync(int patientId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<PatientVisitDto>> GetByPatientIdAsync(int patientId, CancellationToken cancellationToken = default)
     {
-        var visits = await _dbContext.Visits
+        return await _dbContext.Visits
             .AsNoTracking()
             .Where(visit => visit.PatientId == patientId)
             .OrderByDescending(visit => visit.VisitDateTime)
+            .Select(visit => new PatientVisitDto
+            {
+                VisitId = visit.VisitId,
+                VisitStatus = visit.VisitStatus,
+                VisitDateTime = visit.VisitDateTime,
+                DoctorId = visit.DoctorId,
+                DoctorFullName = visit.Doctor.FirstName + " " + visit.Doctor.LastName,
+                DoctorSpecialization = visit.Doctor.Specialization
+            })
             .ToListAsync(cancellationToken);
-
-        return visits.Select(_visitMapper.ToDto).ToList();
     }
 
     public async Task<IReadOnlyList<ActiveVisitDto>> GetActiveVisitsAsync(CancellationToken cancellationToken = default)
