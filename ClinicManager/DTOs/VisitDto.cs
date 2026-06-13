@@ -65,6 +65,8 @@ public class CreateVisitDto
 
 public class UpdateVisitStatusDto
 {
-    [Required]
+    [Display(Name = "Status wizyty")]
+    [Required(ErrorMessage = "Status wizyty jest wymagany.")]
+    [EnumDataType(typeof(VisitState), ErrorMessage = "Wybrano nieprawidłowy status wizyty.")]
     public VisitState VisitStatus { get; set; }
 }
