@@ -1,3 +1,5 @@
+using ClinicManager.DTOs;
+using ClinicManager.Models;
 using ClinicManager.Services;
 using ClinicManager.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -80,6 +82,27 @@ public class VisitsController : Controller
 
         var errorModel = await BuildCreateVisitViewModelAsync(model, cancellationToken);
         return View(errorModel);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin,Rejestratorka,Lekarz")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateStatus(int id, UpdateVisitStatusDto model, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid || !Enum.IsDefined(typeof(VisitState), model.VisitStatus))
+        {
+            TempData["ErrorMessage"] = "Wybrano nieprawidłowy status wizyty.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var updated = await _visitService.UpdateStatusAsync(id, model.VisitStatus, cancellationToken);
+        if (!updated)
+        {
+            return NotFound();
+        }
+
+        TempData["SuccessMessage"] = "Status wizyty został zaktualizowany.";
+        return RedirectToAction(nameof(Index));
     }
 
     private async Task<CreateVisitViewModel> BuildCreateVisitViewModelAsync(

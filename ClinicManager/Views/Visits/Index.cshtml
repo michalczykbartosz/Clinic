@@ -4,9 +4,21 @@
 @{
     ViewData["Title"] = "Wizyty";
     var canCreateVisit = User.IsInRole("Admin") || User.IsInRole("Rejestratorka");
+    var canUpdateVisitStatus = User.IsInRole("Admin") || User.IsInRole("Rejestratorka") || User.IsInRole("Lekarz");
 }
 
 @functions {
+    private static IReadOnlyList<(VisitState Status, string Label)> GetVisitStatusOptions()
+    {
+        return
+        [
+            (VisitState.Planned, "Zaplanowana"),
+            (VisitState.InProgress, "W trakcie"),
+            (VisitState.Finished, "Zakończona"),
+            (VisitState.Canceled, "Anulowana")
+        ];
+    }
+
     private static string GetVisitStatusLabel(VisitState status)
     {
         return status switch
@@ -45,6 +57,11 @@
     <div class="alert alert-success" role="alert">@successMessage</div>
 }
 
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
 @if (Model.Count == 0)
 {
     <div class="alert alert-info" role="alert">Brak wizyt w systemie.</div>
@@ -62,6 +79,10 @@ else
                     <th>PESEL</th>
                     <th>Lekarz</th>
                     <th>Specjalizacja</th>
+                    @if (canUpdateVisitStatus)
+                    {
+                        <th class="text-end">Zmień status</th>
+                    }
                 </tr>
             </thead>
             <tbody>
@@ -83,6 +104,32 @@ else
                     <td>@visit.PatientPESEL</td>
                     <td>@visit.DoctorFullName</td>
                     <td>@visit.DoctorSpecialization</td>
+                    @if (canUpdateVisitStatus)
+                    {
+                        <td>
+                            <form asp-action="UpdateStatus"
+                                  asp-route-id="@visit.VisitId"
+                                  method="post"
+                                  class="d-flex justify-content-end gap-2">
+                                <select name="VisitStatus"
+                                        class="form-select form-select-sm w-auto"
+                                        aria-label="Status wizyty @visit.VisitId">
+                                    @foreach (var option in GetVisitStatusOptions())
+                                    {
+                                        if (option.Status == visit.VisitStatus)
+                                        {
+                                            <option value="@option.Status" selected>@option.Label</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@option.Status">@option.Label</option>
+                                        }
+                                    }
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Zapisz</button>
+                            </form>
+                        </td>
+                    }
                 </tr>
             }
             </tbody>

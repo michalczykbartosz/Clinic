@@ -235,6 +235,51 @@ public class VisitsControllerTests
         Assert.That(visitService.CreatedVisit.DoctorId, Is.EqualTo(2));
     }
 
+    [Test]
+    public async Task UpdateStatus_WhenVisitExists_UpdatesStatusAndRedirectsToIndex()
+    {
+        var visitService = new VisitFormVisitService();
+        var controller = new VisitsController(
+            visitService,
+            new VisitFormPatientService(),
+            new VisitFormDoctorService(),
+            NullLogger<VisitsController>.Instance)
+        {
+            TempData = new TempDataDictionary(
+                new DefaultHttpContext(),
+                new TestTempDataProvider())
+        };
+
+        var result = await controller.UpdateStatus(
+            10,
+            new UpdateVisitStatusDto { VisitStatus = VisitState.Finished },
+            CancellationToken.None);
+
+        var redirectResult = result as RedirectToActionResult;
+        Assert.That(redirectResult, Is.Not.Null);
+        Assert.That(redirectResult!.ActionName, Is.EqualTo("Index"));
+        Assert.That(visitService.UpdatedVisitId, Is.EqualTo(10));
+        Assert.That(visitService.UpdatedStatus, Is.EqualTo(VisitState.Finished));
+    }
+
+    [Test]
+    public async Task UpdateStatus_WhenVisitDoesNotExist_ReturnsNotFound()
+    {
+        var visitService = new VisitFormVisitService { UpdateStatusResult = false };
+        var controller = new VisitsController(
+            visitService,
+            new VisitFormPatientService(),
+            new VisitFormDoctorService(),
+            NullLogger<VisitsController>.Instance);
+
+        var result = await controller.UpdateStatus(
+            999,
+            new UpdateVisitStatusDto { VisitStatus = VisitState.Canceled },
+            CancellationToken.None);
+
+        Assert.That(result, Is.InstanceOf<NotFoundResult>());
+    }
+
     private sealed class VisitFormPatientService : IPatientService
     {
         public IReadOnlyList<PatientDto> Patients { get; set; } = Array.Empty<PatientDto>();
@@ -288,6 +333,9 @@ public class VisitsControllerTests
     private sealed class VisitFormVisitService : IVisitService
     {
         public CreateVisitDto? CreatedVisit { get; private set; }
+        public int? UpdatedVisitId { get; private set; }
+        public VisitState? UpdatedStatus { get; private set; }
+        public bool UpdateStatusResult { get; set; } = true;
 
         public Task<IReadOnlyList<VisitDto>> GetAllAsync(CancellationToken cancellationToken = default)
         {
@@ -330,7 +378,10 @@ public class VisitsControllerTests
 
         public Task<bool> UpdateStatusAsync(int visitId, VisitState visitStatus, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            UpdatedVisitId = visitId;
+            UpdatedStatus = visitStatus;
+
+            return Task.FromResult(UpdateStatusResult);
         }
     }
 
