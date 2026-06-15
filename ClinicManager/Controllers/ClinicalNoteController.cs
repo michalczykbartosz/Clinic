@@ -29,13 +29,14 @@ public class ClinicalNoteController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> SaveNote(ClinicalNoteDto dtoNote)
     {
-        if (!ModelState.IsValid) return View(dtoNote);
+        if (!ModelState.IsValid) return View("GetNote", dtoNote);
         var (success, error) = await _noteService.CreateOrUpdateNoteAsync(dtoNote);
-        if (success is true) return RedirectToAction("Index","Home");
+        if (success is true) return RedirectToAction("Index","Visits");
         ModelState.AddModelError(string.Empty, error);
-        return View(dtoNote);
+        return View("GetNote", dtoNote);
 
     }
 }

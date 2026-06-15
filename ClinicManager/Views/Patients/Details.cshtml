@@ -84,6 +84,7 @@ else
                     <th>Status</th>
                     <th>Lekarz</th>
                     <th>Specjalizacja</th>
+                    <th class="text-end">Procedury</th>
                 </tr>
             </thead>
             <tbody>
@@ -99,6 +100,14 @@ else
                     </td>
                     <td>@visit.DoctorFullName</td>
                     <td>@visit.DoctorSpecialization</td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-secondary"
+                           asp-controller="Procedures"
+                           asp-action="Index"
+                           asp-route-visitId="@visit.VisitId">
+                            Procedury
+                        </a>
+                    </td>
                 </tr>
             }
             </tbody>

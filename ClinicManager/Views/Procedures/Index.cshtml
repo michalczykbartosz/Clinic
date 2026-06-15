@@ -1,0 +1,60 @@
+@model ClinicManager.ViewModels.ProcedureListViewModel
+
+@{
+    ViewData["Title"] = "Procedury";
+    var canAddProcedure = User.IsInRole("Lekarz");
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h1 class="h3 mb-1">Procedury</h1>
+        <div class="text-muted">
+            @Model.PatientFullName, wizyta @Model.VisitDateTime.ToString("dd.MM.yyyy HH:mm")
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" asp-controller="Patients" asp-action="Details" asp-route-id="@Model.PatientId">Powrót</a>
+        @if (canAddProcedure)
+        {
+            <a class="btn btn-primary" asp-action="Create" asp-route-visitId="@Model.VisitId">Dodaj procedurę</a>
+        }
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success" role="alert">@successMessage</div>
+}
+
+@if (Model.Procedures.Count == 0)
+{
+    <div class="alert alert-info" role="alert">Ta wizyta nie ma jeszcze dodanych procedur.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Nazwa</th>
+                    <th>Opis</th>
+                    <th>Lekarz</th>
+                    <th>Data</th>
+                    <th class="text-end">Koszt</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var procedure in Model.Procedures)
+            {
+                <tr>
+                    <td>@procedure.Name</td>
+                    <td>@procedure.Description</td>
+                    <td>@procedure.DoctorFullName</td>
+                    <td>@procedure.Date.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td class="text-end">@procedure.Cost.ToString("C")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

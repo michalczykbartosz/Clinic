@@ -1,0 +1,39 @@
+@model ClinicManager.DTOs.CreateProcedureDto
+
+@{
+    ViewData["Title"] = "Dodaj procedurę";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="h3 mb-0">Dodaj procedurę</h1>
+    <a class="btn btn-outline-secondary" asp-action="Index" asp-route-visitId="@Model.VisitId">Powrót</a>
+</div>
+
+<form asp-action="Create" method="post" class="col-md-8 col-lg-6">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <input type="hidden" asp-for="VisitId" />
+
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Cost" class="form-label"></label>
+        <input asp-for="Cost" class="form-control" type="number" min="0.01" step="0.01" />
+        <span asp-validation-for="Cost" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Zapisz</button>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

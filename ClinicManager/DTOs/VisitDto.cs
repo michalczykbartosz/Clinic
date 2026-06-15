@@ -36,6 +36,7 @@ public class VisitListItemDto
     public int DoctorId { get; set; }
     public string DoctorFullName { get; set; } = string.Empty;
     public string DoctorSpecialization { get; set; } = string.Empty;
+    public bool HasClinicalNote { get; set; }
 }
 
 public class PatientVisitDto

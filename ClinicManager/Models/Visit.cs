@@ -1,4 +1,6 @@
-﻿namespace ClinicManager.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ClinicManager.Models;
 
 public enum VisitState
 {
@@ -16,6 +18,8 @@ public class Visit
     public DateTime VisitDateTime { get; set; }
     public Doctor Doctor { get; set; }
     public Patient Patient { get; set; }
+    [NotMapped]
+    public List<Procedure> Procedures { get; set; } = [];
     
     
 }
