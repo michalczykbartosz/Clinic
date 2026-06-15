@@ -44,7 +44,8 @@ public class VisitService : IVisitService
                 PatientPESEL = visit.Patient.PESEL,
                 DoctorId = visit.DoctorId,
                 DoctorFullName = visit.Doctor.FirstName + " " + visit.Doctor.LastName,
-                DoctorSpecialization = visit.Doctor.Specialization
+                DoctorSpecialization = visit.Doctor.Specialization,
+                HasClinicalNote = _dbContext.ClinicalNotes.Any(note => note.VisitId == visit.VisitId)
             })
             .ToListAsync(cancellationToken);
     }

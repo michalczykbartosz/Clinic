@@ -4,6 +4,7 @@ using ClinicManager.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClinicManager.Migrations
 {
     [DbContext(typeof(ClinicDbContext))]
-    partial class ClinicDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260615194415_AddVisitProcedures")]
+    partial class AddVisitProcedures
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,7 +40,7 @@ namespace ClinicManager.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("VisitId")
+                    b.Property<int?>("VisitId")
                         .HasColumnType("int");
 
                     b.HasKey("ClinicalNoteId");
@@ -280,7 +283,11 @@ namespace ClinicManager.Migrations
                     b.Property<int>("MedicalRecordId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("VisitId1")
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("VisitId")
                         .HasColumnType("int");
 
                     b.HasKey("ProcedureId");
@@ -289,7 +296,7 @@ namespace ClinicManager.Migrations
 
                     b.HasIndex("MedicalRecordId");
 
-                    b.HasIndex("VisitId1");
+                    b.HasIndex("VisitId");
 
                     b.ToTable("Procedures");
                 });
@@ -621,13 +628,16 @@ namespace ClinicManager.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ClinicManager.Models.Visit", null)
+                    b.HasOne("ClinicManager.Models.Visit", "Visit")
                         .WithMany("Procedures")
-                        .HasForeignKey("VisitId1");
+                        .HasForeignKey("VisitId")
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Doctor");
 
                     b.Navigation("MedicalRecord");
+
+                    b.Navigation("Visit");
                 });
 
             modelBuilder.Entity("ClinicManager.Models.Visit", b =>

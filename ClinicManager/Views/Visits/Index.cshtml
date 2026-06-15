@@ -5,6 +5,7 @@
     ViewData["Title"] = "Wizyty";
     var canCreateVisit = User.IsInRole("Admin") || User.IsInRole("Rejestratorka");
     var canUpdateVisitStatus = User.IsInRole("Admin") || User.IsInRole("Rejestratorka") || User.IsInRole("Lekarz");
+    var canManageClinicalNotes = User.IsInRole("Lekarz");
 }
 
 @functions {
@@ -127,6 +128,15 @@ else
                                     }
                                 </select>
                                 <button type="submit" class="btn btn-sm btn-outline-primary">Zapisz</button>
+                                @if (canManageClinicalNotes)
+                                {
+                                    <a class="btn btn-sm btn-outline-secondary"
+                                       asp-controller="ClinicalNote"
+                                       asp-action="GetNote"
+                                       asp-route-visitId="@visit.VisitId">
+                                        @(visit.HasClinicalNote ? "Edytuj notatkę kliniczną" : "Dodaj notatkę kliniczną")
+                                    </a>
+                                }
                             </form>
                         </td>
                     }

@@ -36,6 +36,7 @@ builder.Services.AddScoped<IMedicationService, MedicationService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 builder.Services.AddScoped<IClinicalNoteService, ClinicalNoteService>();
+builder.Services.AddScoped<IProcedureService, ProcedureService>();
     
 var app = builder.Build();
 
