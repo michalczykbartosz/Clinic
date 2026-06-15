@@ -11,8 +11,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 //dodanie serwisu bazy danych
-builder.Services.AddDbContext<ClinicDbContext>(x => x.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+builder.Services.AddDbContext<ClinicDbContext>(x => x
+    .UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+    .LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information)
+    .EnableSensitiveDataLogging());
 //dodanie serwisu ASP.NET Identity
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options=>
 {
