@@ -1,8 +1,10 @@
 using ClinicManager.Data;
 using ClinicManager.Mappers;
 using ClinicManager.Services;
+using ClinicManager.BackgroundServices;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;  
+using Microsoft.AspNetCore.Identity;
+using QuestPDF.Infrastructure;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,6 +42,9 @@ builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 builder.Services.AddScoped<IClinicalNoteService, ClinicalNoteService>();
 builder.Services.AddScoped<IProcedureService, ProcedureService>();
 builder.Services.AddScoped<IReportService, ReportService>();
+
+//BackgroundServices
+builder.Services.AddHostedService<NextDayReportAutomationService>();
     
 var app = builder.Build();
 
@@ -51,6 +56,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+QuestPDF.Settings.License = LicenseType.Community;
 
 app.UseHttpsRedirection();
 app.UseRouting();
