@@ -10,6 +10,9 @@
 ClinicManager/wwwroot/uploads/patient-documents/*
 !ClinicManager/wwwroot/uploads/patient-documents/.gitkeep
 
+# Load test reports
+ClinicManager.LoadTests/reports/
+
 # User-specific files
 *.rsuser
 *.suo

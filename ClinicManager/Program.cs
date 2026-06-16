@@ -23,6 +23,7 @@ try
 
     // Add services to the container.
     builder.Services.AddControllersWithViews();
+    builder.Services.AddOpenApi();
 
     //dodanie serwisu bazy danych
     builder.Services.AddDbContext<ClinicDbContext>(x => x
@@ -101,6 +102,8 @@ try
     app.UseAuthentication();
 
     app.UseAuthorization();
+
+    app.MapOpenApi();
 
     app.MapStaticAssets();
 

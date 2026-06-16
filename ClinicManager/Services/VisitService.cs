@@ -81,8 +81,6 @@ public class VisitService : IVisitService
     {
         return await _dbContext.Visits
             .AsNoTracking()
-            .Include(visit => visit.Patient)
-            .Include(visit => visit.Doctor)
             .Where(visit => visit.VisitStatus == VisitState.Planned || visit.VisitStatus == VisitState.InProgress)
             .OrderBy(visit => visit.VisitDateTime)
             .Select(visit => new ActiveVisitDto
