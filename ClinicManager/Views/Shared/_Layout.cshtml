@@ -44,6 +44,12 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Medication" asp-action="Index">Leki</a>
                             </li>
                         }
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Report" asp-action="Index">Raporty</a>
+                            </li>
+                        }
                     </ul>
                     @if (User.Identity != null && User.Identity.IsAuthenticated)
                     {

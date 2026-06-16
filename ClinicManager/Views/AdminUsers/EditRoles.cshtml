@@ -1,20 +1,369 @@
 ﻿@model ClinicManager.DTOs.UserRolesDto
 
-<form asp-action="EditRoles" method="post">
-    <input type="hidden" asp-for="Id" />
-    <div>
-        <p>Edytujesz użytkownika: <strong>@Model.Email</strong></p>
-    </div>
-    <h3>Role w systemie:</h3>
-    @foreach (var role in Model.AllRoles)
-    {
-        <div>
-            <input type="checkbox" name="roleNames" value="@role" 
-                   @(Model.Roles.Contains(role) ? "checked" : "") />
-            <label>@role</label>
+@{
+    ViewData["Title"] = "Edycja ról";
+}
+
+<div class="roles-wrapper">
+
+    <div class="page-header">
+        <div class="page-header__icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
         </div>
-    }
-    <div>
-        <button type="submit">Zapisz zmiany</button>
+        <div>
+            <h1 class="page-header__title">Edycja ról</h1>
+            <p class="page-header__sub">Zarządzaj uprawnieniami użytkownika</p>
+        </div>
     </div>
-</form>
+
+    <div class="user-badge">
+        <div class="user-badge__avatar">
+            @Model.Email[0].ToString().ToUpper()
+        </div>
+        <div class="user-badge__info">
+            <span class="user-badge__label">Edytujesz użytkownika</span>
+            <span class="user-badge__email">@Model.Email</span>
+        </div>
+    </div>
+
+    <form asp-action="EditRoles" method="post">
+        <input type="hidden" asp-for="Id" />
+
+        <div class="roles-card">
+            <h2 class="roles-card__title">Role w systemie</h2>
+            <p class="roles-card__hint">Zaznacz role, które ma posiadać ten użytkownik</p>
+
+            <div class="roles-list">
+                @foreach (var role in Model.AllRoles)
+                {
+                    var isChecked = Model.Roles.Contains(role);
+                    var roleId = $"role_{role}";
+                    <label class="role-item @(isChecked ? "role-item--checked" : "")" for="@roleId">
+                        <input type="checkbox"
+                               id="@roleId"
+                               name="roleNames"
+                               value="@role"
+                               class="role-item__checkbox"
+                               @(isChecked ? "checked" : "") />
+                        <span class="role-item__box">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </span>
+                        <span class="role-item__icon">
+                            @if (role == "Admin")
+                            {
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                </svg>
+                            }
+                            else if (role == "Doctor")
+                            {
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                                </svg>
+                            }
+                            else
+                            {
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                            }
+                        </span>
+                        <span class="role-item__name">@role</span>
+                    </label>
+                }
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a asp-action="Index" class="btn btn-secondary">Anuluj</a>
+            <button type="submit" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2.5"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Zapisz zmiany
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    .roles-wrapper {
+        max-width: 520px;
+        margin: 2.5rem auto;
+        padding: 0 1rem;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.75rem;
+    }
+
+    .page-header__icon {
+        width: 48px;
+        height: 48px;
+        background: #EFF6FF;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #2563EB;
+        flex-shrink: 0;
+    }
+
+    .page-header__icon svg { width: 24px; height: 24px; }
+
+    .page-header__title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #0F172A;
+        margin: 0 0 .15rem;
+        letter-spacing: -.02em;
+    }
+
+    .page-header__sub {
+        font-size: .85rem;
+        color: #64748B;
+        margin: 0;
+    }
+
+    .user-badge {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    }
+
+    .user-badge__avatar {
+        width: 42px;
+        height: 42px;
+        background: linear-gradient(135deg, #3B82F6, #6366F1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #fff;
+        flex-shrink: 0;
+    }
+
+    .user-badge__info {
+        display: flex;
+        flex-direction: column;
+        gap: .15rem;
+    }
+
+    .user-badge__label {
+        font-size: .7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .07em;
+        color: #94A3B8;
+    }
+
+    .user-badge__email {
+        font-size: .9rem;
+        font-weight: 600;
+        color: #1E293B;
+    }
+
+    .roles-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        padding: 1.5rem;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    }
+
+    .roles-card__title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #0F172A;
+        margin: 0 0 .25rem;
+    }
+
+    .roles-card__hint {
+        font-size: .8rem;
+        color: #94A3B8;
+        margin: 0 0 1.25rem;
+    }
+
+    .roles-list {
+        display: flex;
+        flex-direction: column;
+        gap: .6rem;
+    }
+
+    .role-item {
+        display: flex;
+        align-items: center;
+        gap: .9rem;
+        padding: .85rem 1rem;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: border-color .18s, background .18s, box-shadow .18s;
+        user-select: none;
+        background: #FAFAFA;
+    }
+
+    .role-item:hover {
+        border-color: #93C5FD;
+        background: #F0F7FF;
+    }
+
+ {
+        border-color: #3B82F6;
+        background: #EFF6FF;
+    }
+
+    .role-item__checkbox {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+        pointer-events: none;
+    }
+
+    .role-item__box {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #CBD5E1;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: border-color .18s, background .18s;
+        background: #fff;
+    }
+
+    .role-item__box svg {
+        width: 11px;
+        height: 11px;
+        color: #fff;
+        opacity: 0;
+        transition: opacity .15s;
+    }
+
+    .role-item--checked .role-item__box {
+        background: #2563EB;
+        border-color: #2563EB;
+    }
+
+    .role-item--checked .role-item__box svg { opacity: 1; }
+
+    .role-item__icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        background: #F1F5F9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748B;
+        flex-shrink: 0;
+        transition: background .18s, color .18s;
+    }
+
+    .role-item__icon svg { width: 17px; height: 17px; }
+
+    .role-item--checked .role-item__icon {
+        background: #DBEAFE;
+        color: #2563EB;
+    }
+
+    .role-item__name {
+        font-size: .9rem;
+        font-weight: 600;
+        color: #374151;
+        flex: 1;
+    }
+
+    .role-item--checked .role-item__name { color: #1D4ED8; }
+
+    .form-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: .75rem;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .65rem 1.4rem;
+        font-size: .875rem;
+        font-weight: 600;
+        border-radius: 9px;
+        border: 1.5px solid transparent;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .18s;
+        font-family: inherit;
+    }
+
+    .btn-primary {
+        background: #2563EB;
+        color: #fff;
+        border-color: #2563EB;
+    }
+
+    .btn-primary:hover {
+        background: #1D4ED8;
+        border-color: #1D4ED8;
+        box-shadow: 0 4px 12px rgba(37,99,235,.3);
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: #fff;
+        color: #475569;
+        border-color: #D1D5DB;
+    }
+
+    .btn-secondary:hover {
+        background: #F8FAFC;
+        border-color: #94A3B8;
+    }
+
+    @@media (max-width: 480px) {
+        .form-actions { flex-direction: column-reverse; }
+        .btn { width: 100%; justify-content: center; }
+    }
+</style>
+
+<script>
+    document.querySelectorAll('.role-item').forEach(label => {
+        label.addEventListener('click', () => {
+            const cb = label.querySelector('.role-item__checkbox');
+            setTimeout(() => {
+                label.classList.toggle('role-item--checked', cb.checked);
+            }, 0);
+        });
+    });
+</script>

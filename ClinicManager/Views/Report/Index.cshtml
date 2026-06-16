@@ -1,0 +1,317 @@
+﻿@{
+    ViewData["Title"] = "Raport kosztów";
+}
+
+<div class="raport-wrapper">
+    <div class="raport-header">
+        <div class="raport-header__icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+            </svg>
+        </div>
+        <div>
+            <h1 class="raport-header__title">Raport kosztów</h1>
+            <p class="raport-header__subtitle">Generuj zestawienie kosztów według wybranych kryteriów</p>
+        </div>
+    </div>
+
+    <div class="raport-card">
+        <form asp-action="GetReportCost" asp-controller="Report" method="post">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="form-section">
+                <h2 class="form-section__title">
+                    <span class="form-section__number">01</span>
+                    Filtrowanie
+                </h2>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="patientId">
+                            ID Pacjenta
+                            <span class="form-label__hint">opcjonalne</span>
+                        </label>
+                        <input type="number"
+                               id="patientId"
+                               name="patientId"
+                               class="form-control"
+                               placeholder="np. 42"
+                               min="1"/>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="doctorId">
+                            ID Lekarza
+                            <span class="form-label__hint">opcjonalne</span>
+                        </label>
+                        <input type="number"
+                               id="doctorId"
+                               name="doctorId"
+                               class="form-control"
+                               placeholder="np. 7"
+                               min="1"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2 class="form-section__title">
+                    <span class="form-section__number">02</span>
+                    Zakres dat
+                </h2>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="startDate">Data od</label>
+                        <input type="date"
+                               id="startDate"
+                               name="startDate"
+                               class="form-control"
+                               required
+                               value="@DateOnly.FromDateTime(DateTime.Today.AddMonths(-1).ToString("yyyy-MM-dd") is var s ? DateTime.Today.AddMonths(-1) : DateTime.Today)"/>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="endDate">Data do</label>
+                        <input type="date"
+                               id="endDate"
+                               name="endDate"
+                               class="form-control"
+                               required
+                               value="@DateTime.Today.ToString("yyyy-MM-dd")"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2.2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    Generuj raport
+                </button>
+                <button type="reset" class="btn btn-secondary">Wyczyść</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    .raport-wrapper {
+        max-width: 720px;
+        margin: 2.5rem auto;
+        padding: 0 1rem;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    
+    .raport-header {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+
+    .raport-header__icon {
+        width: 52px;
+        height: 52px;
+        background: #EFF6FF;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #2563EB;
+        flex-shrink: 0;
+    }
+
+    .raport-header__icon svg {
+        width: 26px;
+        height: 26px;
+    }
+
+    .raport-header__title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #0F172A;
+        margin: 0 0 .2rem;
+        letter-spacing: -.02em;
+    }
+
+    .raport-header__subtitle {
+        font-size: .9rem;
+        color: #64748B;
+        margin: 0;
+    }
+
+    
+    .raport-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 2rem 2.25rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04);
+    }
+
+    
+    .form-section {
+        margin-bottom: 2rem;
+    }
+
+    .form-section__title {
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+        font-size: .78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: #94A3B8;
+        margin: 0 0 1.25rem;
+    }
+
+    .form-section__number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        background: #F1F5F9;
+        border-radius: 6px;
+        font-size: .72rem;
+        color: #475569;
+        font-weight: 700;
+    }
+
+    
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+    }
+
+    @@media (max-width: 520px) {
+        .form-grid { grid-template-columns: 1fr; }
+        .raport-card { padding: 1.5rem 1.25rem; }
+    }
+
+    
+    .form-group { display: flex; flex-direction: column; gap: .4rem; }
+
+    .form-label {
+        font-size: .82rem;
+        font-weight: 600;
+        color: #374151;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+
+    .form-label__hint {
+        font-size: .72rem;
+        font-weight: 400;
+        color: #9CA3AF;
+        background: #F9FAFB;
+        border: 1px solid #E5E7EB;
+        border-radius: 4px;
+        padding: .1rem .35rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: .6rem .85rem;
+        font-size: .9rem;
+        color: #1E293B;
+        background: #FAFAFA;
+        border: 1.5px solid #D1D5DB;
+        border-radius: 9px;
+        transition: border-color .18s, box-shadow .18s;
+        outline: none;
+        appearance: none;
+        -webkit-appearance: none;
+    }
+
+    .form-control:focus {
+        border-color: #3B82F6;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+    }
+
+    .form-control::placeholder { color: #C0C8D2; }
+
+    
+    .form-actions {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #F1F5F9;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        padding: .65rem 1.5rem;
+        font-size: .875rem;
+        font-weight: 600;
+        border-radius: 9px;
+        border: 1.5px solid transparent;
+        cursor: pointer;
+        transition: all .18s;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: #2563EB;
+        color: #fff;
+        border-color: #2563EB;
+    }
+
+    .btn-primary:hover {
+        background: #1D4ED8;
+        border-color: #1D4ED8;
+        box-shadow: 0 4px 12px rgba(37,99,235,.35);
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: #fff;
+        color: #475569;
+        border-color: #D1D5DB;
+    }
+
+    .btn-secondary:hover {
+        background: #F8FAFC;
+        border-color: #94A3B8;
+    }
+
+    
+    .alert {
+        padding: .85rem 1rem;
+        border-radius: 9px;
+        font-size: .875rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .alert-danger {
+        background: #FEF2F2;
+        border: 1px solid #FECACA;
+        color: #991B1B;
+    }
+
+    .alert:empty { display: none; }
+</style>
+}
