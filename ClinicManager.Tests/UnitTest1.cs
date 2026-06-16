@@ -93,9 +93,73 @@ public class PatientDetailsTests
         Assert.That(result, Is.InstanceOf<NotFoundResult>());
     }
 
+    [Test]
+    public async Task Record_Get_WhenPatientExists_ReturnsRecordForm()
+    {
+        var controller = new PatientsController(
+            new StubPatientService
+            {
+                Patient = new PatientDto
+                {
+                    PatientId = 2,
+                    FirstName = "Anna",
+                    LastName = "Kowalska",
+                    PESEL = "91020312345",
+                    InsuranceNumber = "NFZ-123"
+                }
+            },
+            new StubVisitService(),
+            new StubPatientDocumentService(),
+            NullLogger<PatientsController>.Instance);
+
+        var result = await controller.Record(2, CancellationToken.None);
+
+        var viewResult = result as ViewResult;
+        Assert.That(viewResult, Is.Not.Null);
+
+        var model = viewResult!.Model as UpdatePatientRecordDto;
+        Assert.That(model, Is.Not.Null);
+        Assert.That(model!.PESEL, Is.EqualTo("91020312345"));
+        Assert.That(model.InsuranceNumber, Is.EqualTo("NFZ-123"));
+    }
+
+    [Test]
+    public async Task Record_Post_WhenModelIsValid_UpdatesRecordAndRedirectsToDetails()
+    {
+        var patientService = new StubPatientService();
+        var controller = new PatientsController(
+            patientService,
+            new StubVisitService(),
+            new StubPatientDocumentService(),
+            NullLogger<PatientsController>.Instance)
+        {
+            TempData = new TempDataDictionary(
+                new DefaultHttpContext(),
+                new TestTempDataProvider())
+        };
+
+        var dto = new UpdatePatientRecordDto
+        {
+            PESEL = "91020312345",
+            InsuranceNumber = "NFZ-123"
+        };
+
+        var result = await controller.Record(2, dto, CancellationToken.None);
+
+        var redirectResult = result as RedirectToActionResult;
+        Assert.That(redirectResult, Is.Not.Null);
+        Assert.That(redirectResult!.ActionName, Is.EqualTo("Details"));
+        Assert.That(redirectResult.RouteValues!["id"], Is.EqualTo(2));
+        Assert.That(patientService.UpdatedRecordPatientId, Is.EqualTo(2));
+        Assert.That(patientService.UpdatedRecord, Is.SameAs(dto));
+    }
+
     private sealed class StubPatientService : IPatientService
     {
         public PatientDto? Patient { get; set; }
+        public int? UpdatedRecordPatientId { get; private set; }
+        public UpdatePatientRecordDto? UpdatedRecord { get; private set; }
+        public bool UpdateRecordResult { get; set; } = true;
 
         public Task<IReadOnlyList<PatientDto>> GetAllAsync(CancellationToken cancellationToken = default)
         {
@@ -120,6 +184,17 @@ public class PatientDetailsTests
         public Task<bool> UpdateAsync(int patientId, UpsertPatientDto dto, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
+        }
+
+        public Task<bool> UpdateRecordAsync(
+            int patientId,
+            UpdatePatientRecordDto dto,
+            CancellationToken cancellationToken = default)
+        {
+            UpdatedRecordPatientId = patientId;
+            UpdatedRecord = dto;
+
+            return Task.FromResult(UpdateRecordResult);
         }
 
         public Task<bool> DeleteAsync(int patientId, CancellationToken cancellationToken = default)
@@ -198,6 +273,18 @@ public class PatientDetailsTests
             throw new NotImplementedException();
         }
     }
+
+    private sealed class TestTempDataProvider : ITempDataProvider
+    {
+        public IDictionary<string, object> LoadTempData(HttpContext context)
+        {
+            return new Dictionary<string, object>();
+        }
+
+        public void SaveTempData(HttpContext context, IDictionary<string, object> values)
+        {
+        }
+    }
 }
 
 public class PatientDocumentDtoTests
@@ -222,6 +309,32 @@ public class PatientDocumentDtoTests
 
         Assert.That(isValid, Is.False);
         Assert.That(invalidMembers, Does.Contain(nameof(UploadPatientDocumentDto.File)));
+    }
+}
+
+public class PatientRecordDtoTests
+{
+    [Test]
+    public void UpdatePatientRecordDto_WhenRequiredFieldsAreInvalid_FailsValidation()
+    {
+        var dto = new UpdatePatientRecordDto
+        {
+            PESEL = "abc",
+            InsuranceNumber = "   "
+        };
+        var validationResults = new List<ValidationResult>();
+
+        var isValid = Validator.TryValidateObject(
+            dto,
+            new ValidationContext(dto),
+            validationResults,
+            validateAllProperties: true);
+
+        var invalidMembers = validationResults.SelectMany(result => result.MemberNames);
+
+        Assert.That(isValid, Is.False);
+        Assert.That(invalidMembers, Does.Contain(nameof(UpdatePatientRecordDto.PESEL)));
+        Assert.That(invalidMembers, Does.Contain(nameof(UpdatePatientRecordDto.InsuranceNumber)));
     }
 }
 
@@ -380,6 +493,14 @@ public class VisitsControllerTests
         }
 
         public Task<bool> UpdateAsync(int patientId, UpsertPatientDto dto, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> UpdateRecordAsync(
+            int patientId,
+            UpdatePatientRecordDto dto,
+            CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

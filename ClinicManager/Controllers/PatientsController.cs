@@ -117,6 +117,47 @@ public class PatientsController : Controller
 
     [HttpGet]
     [Authorize(Roles = "Admin,Rejestratorka")]
+    public async Task<IActionResult> Record(int id, CancellationToken cancellationToken)
+    {
+        var patient = await _patientService.GetByIdAsync(id, cancellationToken);
+        if (patient is null)
+        {
+            return NotFound();
+        }
+
+        SetRecordViewData(patient);
+        return View(ToUpdatePatientRecordDto(patient));
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin,Rejestratorka")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Record(int id, UpdatePatientRecordDto model, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            var patient = await _patientService.GetByIdAsync(id, cancellationToken);
+            if (patient is null)
+            {
+                return NotFound();
+            }
+
+            SetRecordViewData(patient);
+            return View(model);
+        }
+
+        var updated = await _patientService.UpdateRecordAsync(id, model, cancellationToken);
+        if (!updated)
+        {
+            return NotFound();
+        }
+
+        TempData["SuccessMessage"] = "Kartoteka pacjenta została uzupełniona.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Admin,Rejestratorka")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         var patient = await _patientService.GetByIdAsync(id, cancellationToken);
@@ -170,5 +211,20 @@ public class PatientsController : Controller
             InsuranceNumber = patient.InsuranceNumber,
             BirthDate = patient.BirthDate
         };
+    }
+
+    private static UpdatePatientRecordDto ToUpdatePatientRecordDto(PatientDto patient)
+    {
+        return new UpdatePatientRecordDto
+        {
+            PESEL = patient.PESEL,
+            InsuranceNumber = patient.InsuranceNumber
+        };
+    }
+
+    private void SetRecordViewData(PatientDto patient)
+    {
+        ViewData["PatientId"] = patient.PatientId;
+        ViewData["PatientFullName"] = $"{patient.FirstName} {patient.LastName}";
     }
 }

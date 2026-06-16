@@ -85,6 +85,28 @@ public class PatientService : IPatientService
         return true;
     }
 
+    public async Task<bool> UpdateRecordAsync(
+        int patientId,
+        UpdatePatientRecordDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        var patient = await _dbContext.Patients
+            .FirstOrDefaultAsync(patient => patient.PatientId == patientId, cancellationToken);
+
+        if (patient is null)
+        {
+            return false;
+        }
+
+        patient.PESEL = dto.PESEL.Trim();
+        patient.InsuranceNumber = dto.InsuranceNumber.Trim();
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Uzupełniono kartotekę pacjenta {PatientId}", patient.PatientId);
+        return true;
+    }
+
     public async Task<bool> DeleteAsync(int patientId, CancellationToken cancellationToken = default)
     {
         var patient = await _dbContext.Patients

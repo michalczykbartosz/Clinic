@@ -51,3 +51,18 @@ public class UpsertPatientDto
     [DataType(DataType.Date)]
     public DateOnly BirthDate { get; set; }
 }
+
+public class UpdatePatientRecordDto
+{
+    [Display(Name = "PESEL")]
+    [Required(ErrorMessage = "PESEL jest wymagany.")]
+    [StringLength(11, MinimumLength = 11, ErrorMessage = "PESEL musi mieć dokładnie 11 cyfr!")]
+    [RegularExpression("^[0-9]{11}$", ErrorMessage = "PESEL może zawierać wyłącznie cyfry!")]
+    public string PESEL { get; set; } = string.Empty;
+
+    [Display(Name = "Numer ubezpieczenia")]
+    [Required(ErrorMessage = "Numer ubezpieczenia jest wymagany.")]
+    [StringLength(40, ErrorMessage = "Numer ubezpieczenia może mieć maksymalnie 40 znaków.")]
+    [RegularExpression(@".*\S.*", ErrorMessage = "Numer ubezpieczenia jest wymagany.")]
+    public string InsuranceNumber { get; set; } = string.Empty;
+}
