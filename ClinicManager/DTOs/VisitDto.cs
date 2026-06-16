@@ -10,6 +10,8 @@ public class VisitDto
     public int PatientId { get; set; }
     public int DoctorId { get; set; }
     public DateTime VisitDateTime { get; set; }
+    public decimal Cost { get; set; }
+    public bool IsPaid { get; set; }
 }
 
 public class ActiveVisitDto
@@ -23,6 +25,8 @@ public class ActiveVisitDto
     public int DoctorId { get; set; }
     public string DoctorFullName { get; set; } = string.Empty;
     public string DoctorSpecialization { get; set; } = string.Empty;
+    public decimal Cost { get; set; }
+    public bool IsPaid { get; set; }
 }
 
 public class VisitListItemDto
@@ -37,6 +41,8 @@ public class VisitListItemDto
     public string DoctorFullName { get; set; } = string.Empty;
     public string DoctorSpecialization { get; set; } = string.Empty;
     public bool HasClinicalNote { get; set; }
+    public decimal Cost { get; set; }
+    public bool IsPaid { get; set; }
 }
 
 public class PatientVisitDto
@@ -47,6 +53,8 @@ public class PatientVisitDto
     public int DoctorId { get; set; }
     public string DoctorFullName { get; set; } = string.Empty;
     public string DoctorSpecialization { get; set; } = string.Empty;
+    public decimal Cost { get; set; }
+    public bool IsPaid { get; set; }
 }
 
 public class CreateVisitDto
@@ -62,6 +70,11 @@ public class CreateVisitDto
     [Display(Name = "Data i godzina wizyty")]
     [Required(ErrorMessage = "Data i godzina wizyty jest wymagana.")]
     public DateTime VisitDateTime { get; set; }
+
+    [Display(Name = "Koszt wizyty")]
+    [Range(0, 999999.99, ErrorMessage = "Koszt wizyty nie może być ujemny.")]
+    public decimal Cost { get; set; }
+
 }
 
 public class UpdateVisitStatusDto

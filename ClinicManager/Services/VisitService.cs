@@ -29,10 +29,96 @@ public class VisitService : IVisitService
         return visits.Select(_visitMapper.ToDto).ToList();
     }
 
-    public async Task<IReadOnlyList<VisitListItemDto>> GetListAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<VisitListItemDto>> GetListAsync(string? query = null, VisitState? status = null, CancellationToken cancellationToken = default)
     {
+        var visitsQuery = _dbContext.Visits
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            var normalizedQuery = query.Trim();
+            visitsQuery = visitsQuery.Where(visit =>
+                visit.Patient.LastName.Contains(normalizedQuery) ||
+                visit.Patient.PESEL.Contains(normalizedQuery));
+        }
+
+        if (status.HasValue)
+        {
+            visitsQuery = visitsQuery.Where(visit => visit.VisitStatus == status.Value);
+        }
+
+        return await visitsQuery
+            .OrderByDescending(visit => visit.VisitDateTime)
+            .Select(visit => new VisitListItemDto
+            {
+                VisitId = visit.VisitId,
+                VisitStatus = visit.VisitStatus,
+                VisitDateTime = visit.VisitDateTime,
+                PatientId = visit.PatientId,
+                PatientFullName = visit.Patient.FirstName + " " + visit.Patient.LastName,
+                PatientPESEL = visit.Patient.PESEL,
+                DoctorId = visit.DoctorId,
+                DoctorFullName = visit.Doctor.FirstName + " " + visit.Doctor.LastName,
+                DoctorSpecialization = visit.Doctor.Specialization,
+                HasClinicalNote = _dbContext.ClinicalNotes.Any(note => note.VisitId == visit.VisitId),
+                Cost = visit.Cost,
+                IsPaid = visit.IsPaid
+            })
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<VisitListItemDto>> GetListForPatientPeselAsync(
+        string pesel,
+        VisitState? status = null,
+        CancellationToken cancellationToken = default)
+    {
+        var normalizedPesel = pesel.Trim();
+
+        var visitsQuery = _dbContext.Visits
+            .AsNoTracking()
+            .Where(visit => visit.Patient.PESEL == normalizedPesel);
+
+        if (status.HasValue)
+        {
+            visitsQuery = visitsQuery.Where(visit => visit.VisitStatus == status.Value);
+        }
+
+        return await visitsQuery
+            .OrderByDescending(visit => visit.VisitDateTime)
+            .Select(visit => new VisitListItemDto
+            {
+                VisitId = visit.VisitId,
+                VisitStatus = visit.VisitStatus,
+                VisitDateTime = visit.VisitDateTime,
+                PatientId = visit.PatientId,
+                PatientFullName = visit.Patient.FirstName + " " + visit.Patient.LastName,
+                PatientPESEL = visit.Patient.PESEL,
+                DoctorId = visit.DoctorId,
+                DoctorFullName = visit.Doctor.FirstName + " " + visit.Doctor.LastName,
+                DoctorSpecialization = visit.Doctor.Specialization,
+                HasClinicalNote = _dbContext.ClinicalNotes.Any(note => note.VisitId == visit.VisitId),
+                Cost = visit.Cost,
+                IsPaid = visit.IsPaid
+            })
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<VisitListItemDto>> GetDoctorScheduleAsync(
+        int doctorId,
+        DateOnly date,
+        CancellationToken cancellationToken = default)
+    {
+        var start = date.ToDateTime(TimeOnly.MinValue);
+        var end = start.AddDays(1);
+
         return await _dbContext.Visits
             .AsNoTracking()
+            .Where(visit =>
+                visit.DoctorId == doctorId &&
+                visit.VisitStatus == VisitState.Planned &&
+                visit.VisitDateTime >= start &&
+                visit.VisitDateTime < end)
             .OrderBy(visit => visit.VisitDateTime)
             .Select(visit => new VisitListItemDto
             {
@@ -45,7 +131,9 @@ public class VisitService : IVisitService
                 DoctorId = visit.DoctorId,
                 DoctorFullName = visit.Doctor.FirstName + " " + visit.Doctor.LastName,
                 DoctorSpecialization = visit.Doctor.Specialization,
-                HasClinicalNote = _dbContext.ClinicalNotes.Any(note => note.VisitId == visit.VisitId)
+                HasClinicalNote = _dbContext.ClinicalNotes.Any(note => note.VisitId == visit.VisitId),
+                Cost = visit.Cost,
+                IsPaid = visit.IsPaid
             })
             .ToListAsync(cancellationToken);
     }
@@ -72,7 +160,9 @@ public class VisitService : IVisitService
                 VisitDateTime = visit.VisitDateTime,
                 DoctorId = visit.DoctorId,
                 DoctorFullName = visit.Doctor.FirstName + " " + visit.Doctor.LastName,
-                DoctorSpecialization = visit.Doctor.Specialization
+                DoctorSpecialization = visit.Doctor.Specialization,
+                Cost = visit.Cost,
+                IsPaid = visit.IsPaid
             })
             .ToListAsync(cancellationToken);
     }
@@ -93,7 +183,9 @@ public class VisitService : IVisitService
                 PatientPESEL = visit.Patient.PESEL,
                 DoctorId = visit.DoctorId,
                 DoctorFullName = visit.Doctor.FirstName + " " + visit.Doctor.LastName,
-                DoctorSpecialization = visit.Doctor.Specialization
+                DoctorSpecialization = visit.Doctor.Specialization,
+                Cost = visit.Cost,
+                IsPaid = visit.IsPaid
             })
             .ToListAsync(cancellationToken);
     }
@@ -137,6 +229,23 @@ public class VisitService : IVisitService
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Zaktualizowano status wizyty {VisitId} na {VisitStatus}", visit.VisitId, visit.VisitStatus);
+        return true;
+    }
+
+    public async Task<bool> UpdatePaymentAsync(int visitId, bool isPaid, CancellationToken cancellationToken = default)
+    {
+        var visit = await _dbContext.Visits
+            .FirstOrDefaultAsync(visit => visit.VisitId == visitId, cancellationToken);
+
+        if (visit is null)
+        {
+            return false;
+        }
+
+        visit.IsPaid = isPaid;
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Zaktualizowano płatność wizyty {VisitId}: {IsPaid}", visit.VisitId, visit.IsPaid);
         return true;
     }
 }

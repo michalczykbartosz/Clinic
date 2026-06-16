@@ -13,23 +13,41 @@ namespace ClinicManager.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.InsertData(
-                table: "AspNetRoles",
-                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
-                values: new object[,]
-                {
-                    { "1", "test", "Pacjent", "PACJENT" },
-                    { "2", "test", "Admin", "ADMIN" }
-                });
+            migrationBuilder.Sql("""
+                IF NOT EXISTS (SELECT 1 FROM [AspNetRoles] WHERE [Id] = N'1' OR [NormalizedName] = N'PACJENT')
+                BEGIN
+                    INSERT INTO [AspNetRoles] ([Id], [ConcurrencyStamp], [Name], [NormalizedName])
+                    VALUES (N'1', N'test', N'Pacjent', N'PACJENT');
+                END
+                """);
 
-            migrationBuilder.InsertData(
-                table: "Visits",
-                columns: new[] { "VisitId", "DoctorId", "PatientId", "VisitDateTime", "VisitStatus" },
-                values: new object[,]
-                {
-                    { 1, 1, 1, new DateTime(2026, 6, 15, 14, 0, 0, 0, DateTimeKind.Unspecified), 0 },
-                    { 2, 2, 1, new DateTime(2026, 6, 10, 10, 30, 0, 0, DateTimeKind.Unspecified), 1 }
-                });
+            migrationBuilder.Sql("""
+                IF NOT EXISTS (SELECT 1 FROM [AspNetRoles] WHERE [Id] = N'2' OR [NormalizedName] = N'ADMIN')
+                BEGIN
+                    INSERT INTO [AspNetRoles] ([Id], [ConcurrencyStamp], [Name], [NormalizedName])
+                    VALUES (N'2', N'test', N'Admin', N'ADMIN');
+                END
+                """);
+
+            migrationBuilder.Sql("""
+                IF NOT EXISTS (SELECT 1 FROM [Visits] WHERE [VisitId] = 1)
+                BEGIN
+                    SET IDENTITY_INSERT [Visits] ON;
+                    INSERT INTO [Visits] ([VisitId], [DoctorId], [PatientId], [VisitDateTime], [VisitStatus])
+                    VALUES (1, 1, 1, '2026-06-15T14:00:00.0000000', 0);
+                    SET IDENTITY_INSERT [Visits] OFF;
+                END
+                """);
+
+            migrationBuilder.Sql("""
+                IF NOT EXISTS (SELECT 1 FROM [Visits] WHERE [VisitId] = 2)
+                BEGIN
+                    SET IDENTITY_INSERT [Visits] ON;
+                    INSERT INTO [Visits] ([VisitId], [DoctorId], [PatientId], [VisitDateTime], [VisitStatus])
+                    VALUES (2, 2, 1, '2026-06-10T10:30:00.0000000', 1);
+                    SET IDENTITY_INSERT [Visits] OFF;
+                END
+                """);
         }
 
         /// <inheritdoc />

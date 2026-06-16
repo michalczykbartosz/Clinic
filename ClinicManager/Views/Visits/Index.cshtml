@@ -1,11 +1,18 @@
 @using ClinicManager.Models
+@using System.Globalization
 @model IReadOnlyList<ClinicManager.DTOs.VisitListItemDto>
 
 @{
     ViewData["Title"] = "Wizyty";
     var canCreateVisit = User.IsInRole("Admin") || User.IsInRole("Rejestratorka");
     var canUpdateVisitStatus = User.IsInRole("Admin") || User.IsInRole("Rejestratorka") || User.IsInRole("Lekarz");
+    var canManagePayments = User.IsInRole("Admin") || User.IsInRole("Rejestratorka");
     var canManageClinicalNotes = User.IsInRole("Lekarz");
+    var query = ViewData["Query"] as string ?? string.Empty;
+    var selectedStatus = ViewData["Status"] as VisitState?;
+    var isPatientView = ViewData["IsPatientView"] as bool? == true;
+    var patientAccessMessage = ViewData["PatientAccessMessage"] as string;
+    var isSearchActive = selectedStatus.HasValue || (!isPatientView && !string.IsNullOrWhiteSpace(query));
 }
 
 @functions {
@@ -43,6 +50,16 @@
             _ => "status-badge--default"
         };
     }
+
+    private static string FormatMoney(decimal amount)
+    {
+        return amount.ToString("C", CultureInfo.GetCultureInfo("pl-PL"));
+    }
+
+    private static string GetPaymentBadgeClass(bool isPaid)
+    {
+        return isPaid ? "payment-badge--paid" : "payment-badge--unpaid";
+    }
 }
 
 <div class="page-wrapper">
@@ -59,7 +76,7 @@
             </div>
             <div>
                 <h1 class="page-header__title">Wizyty</h1>
-                <p class="page-header__sub">@Model.Count wizyt w systemie</p>
+                <p class="page-header__sub">@(isPatientView ? $"{Model.Count} Twoich wizyt" : $"{Model.Count} wizyt w systemie")</p>
             </div>
         </div>
         @if (canCreateVisit)
@@ -75,6 +92,51 @@
             </a>
         }
     </div>
+
+    <form asp-action="Index" method="get" class="search-card">
+        @if (isPatientView)
+        {
+            <div class="search-field">
+                <label class="form-label">Widok</label>
+                <div class="patient-view-pill">Moje wizyty</div>
+            </div>
+        }
+        else
+        {
+            <div class="search-field">
+                <label for="query" class="form-label">Wyszukaj wizytę</label>
+                <input id="query"
+                       name="query"
+                       value="@query"
+                       class="form-control"
+                       placeholder="Wpisz nazwisko pacjenta lub PESEL" />
+            </div>
+        }
+        <div class="status-filter">
+            <label for="status" class="form-label">Status</label>
+            <select id="status" name="status" class="form-control form-select">
+                <option value="">Wszystkie</option>
+                @foreach (var option in GetVisitStatusOptions())
+                {
+                    if (selectedStatus == option.Status)
+                    {
+                        <option value="@option.Status" selected>@option.Label</option>
+                    }
+                    else
+                    {
+                        <option value="@option.Status">@option.Label</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="search-actions">
+            <button type="submit" class="btn btn-primary">Szukaj</button>
+            @if (isSearchActive)
+            {
+                <a class="btn btn-secondary" asp-action="Index">Wyczyść</a>
+            }
+        </div>
+    </form>
 
     @if (TempData["SuccessMessage"] is string successMessage)
     {
@@ -101,6 +163,19 @@
         </div>
     }
 
+    @if (!string.IsNullOrWhiteSpace(patientAccessMessage))
+    {
+        <div class="alert alert-danger">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            @patientAccessMessage
+        </div>
+    }
+
     @if (Model.Count == 0)
     {
         <div class="empty-state">
@@ -111,7 +186,7 @@
                 <line x1="8" y1="2" x2="8" y2="6"/>
                 <line x1="3" y1="10" x2="21" y2="10"/>
             </svg>
-            <p>Brak wizyt w systemie.</p>
+            <p>@(isSearchActive ? "Nie znaleziono wizyt dla podanej frazy." : "Brak wizyt w systemie.")</p>
         </div>
     }
     else
@@ -125,6 +200,7 @@
                         <th>Status</th>
                         <th>Pacjent</th>
                         <th>Lekarz</th>
+                        <th>Rozliczenie</th>
                         @if (canUpdateVisitStatus)
                         {
                             <th class="th-action">Obsługa</th>
@@ -132,10 +208,11 @@
                     </tr>
                 </thead>
                 <tbody>
-                @foreach (var visit in Model)
+                @for (var index = 0; index < Model.Count; index++)
                 {
+                    var visit = Model[index];
                     <tr>
-                        <td data-label="Numer"><span class="id-chip">#@visit.VisitId</span></td>
+                        <td data-label="Numer"><span class="id-chip">#@(index + 1)</span></td>
                         <td data-label="Data" class="cell--date">@visit.VisitDateTime.ToString("dd.MM.yyyy HH:mm")</td>
                         <td data-label="Status">
                             <span class="status-badge @GetVisitStatusBadgeClass(visit.VisitStatus)">
@@ -143,14 +220,49 @@
                             </span>
                         </td>
                         <td data-label="Pacjent">
-                            <a asp-controller="Patients" asp-action="Details" asp-route-id="@visit.PatientId" class="name-link">
-                                @visit.PatientFullName
-                            </a>
-                            <span class="cell-note">PESEL: @visit.PatientPESEL</span>
+                            @if (isPatientView)
+                            {
+                                <span class="cell-main">@visit.PatientFullName</span>
+                            }
+                            else
+                            {
+                                <a asp-controller="Patients" asp-action="Details" asp-route-id="@visit.PatientId" class="name-link">
+                                    @visit.PatientFullName
+                                </a>
+                                <span class="cell-note">PESEL: @visit.PatientPESEL</span>
+                            }
                         </td>
                         <td data-label="Lekarz">
                             <span class="cell-main">@visit.DoctorFullName</span>
                             <span class="cell-note">@visit.DoctorSpecialization</span>
+                        </td>
+                        <td data-label="Rozliczenie">
+                            <span class="cell-main">@FormatMoney(visit.Cost)</span>
+                            @if (canManagePayments)
+                            {
+                                <form asp-action="UpdatePayment"
+                                      asp-route-id="@visit.VisitId"
+                                      method="post"
+                                      class="payment-form">
+                                    <input type="hidden" name="query" value="@query" />
+                                    <input type="hidden" name="status" value="@selectedStatus" />
+                                    <label class="payment-toggle">
+                                        <input type="checkbox"
+                                               name="isPaid"
+                                               value="true"
+                                               checked="@visit.IsPaid"
+                                               onchange="this.form.submit()" />
+                                        <span>@(visit.IsPaid ? "Opłacone" : "Nieopłacone")</span>
+                                    </label>
+                                    <input type="hidden" name="isPaid" value="false" />
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="payment-badge @GetPaymentBadgeClass(visit.IsPaid)">
+                                    @(visit.IsPaid ? "Opłacone" : "Nieopłacone")
+                                </span>
+                            }
                         </td>
                         @if (canUpdateVisitStatus)
                         {
@@ -159,37 +271,43 @@
                                       asp-route-id="@visit.VisitId"
                                       method="post"
                                       class="status-form">
-                                    <select name="VisitStatus"
-                                            class="status-select"
-                                            aria-label="Status wizyty @visit.VisitId">
-                                        @foreach (var option in GetVisitStatusOptions())
+                                    <input type="hidden" name="query" value="@query" />
+                                    <input type="hidden" name="status" value="@selectedStatus" />
+                                    <div class="status-form__top">
+                                        <select name="VisitStatus"
+                                                class="status-select"
+                                                aria-label="Status wizyty @visit.VisitId">
+                                            @foreach (var option in GetVisitStatusOptions())
+                                            {
+                                                if (option.Status == visit.VisitStatus)
+                                                {
+                                                    <option value="@option.Status" selected>@option.Label</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@option.Status">@option.Label</option>
+                                                }
+                                            }
+                                        </select>
+                                        <button type="submit" class="btn-mini btn-mini--primary">Zapisz</button>
+                                    </div>
+                                    <div class="visit-actions">
+                                        @if (canManageClinicalNotes)
                                         {
-                                            if (option.Status == visit.VisitStatus)
-                                            {
-                                                <option value="@option.Status" selected>@option.Label</option>
-                                            }
-                                            else
-                                            {
-                                                <option value="@option.Status">@option.Label</option>
-                                            }
+                                            <a class="btn-mini btn-mini--secondary"
+                                               asp-controller="ClinicalNote"
+                                               asp-action="GetNote"
+                                               asp-route-visitId="@visit.VisitId">
+                                                @(visit.HasClinicalNote ? "Edytuj notatkę" : "Dodaj notatkę")
+                                            </a>
                                         }
-                                    </select>
-                                    <button type="submit" class="btn-mini btn-mini--primary">Zapisz</button>
-                                    @if (canManageClinicalNotes)
-                                    {
                                         <a class="btn-mini btn-mini--secondary"
-                                           asp-controller="ClinicalNote"
-                                           asp-action="GetNote"
+                                           asp-controller="VisitMedications"
+                                           asp-action="Index"
                                            asp-route-visitId="@visit.VisitId">
-                                            @(visit.HasClinicalNote ? "Edytuj notatkę" : "Dodaj notatkę")
+                                            Leki
                                         </a>
-                                    }
-                                    <a class="btn-mini btn-mini--secondary"
-                                       asp-controller="VisitMedications"
-                                       asp-action="Index"
-                                       asp-route-visitId="@visit.VisitId">
-                                        Leki
-                                    </a>
+                                    </div>
                                 </form>
                             </td>
                         }
@@ -205,7 +323,7 @@
     *, *::before, *::after { box-sizing: border-box; }
 
     .page-wrapper {
-        max-width: 1120px;
+        max-width: 1220px;
         margin: 2.5rem auto;
         padding: 0 1rem;
         font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -253,6 +371,86 @@
         font-size: .82rem;
         color: #94A3B8;
         margin: 0;
+    }
+
+    .search-card {
+        display: flex;
+        align-items: end;
+        gap: .85rem;
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        padding: 1rem;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
+
+    .search-field {
+        flex: 1 1 360px;
+        display: flex;
+        flex-direction: column;
+        gap: .4rem;
+    }
+
+    .status-filter {
+        flex: 0 0 190px;
+        display: flex;
+        flex-direction: column;
+        gap: .4rem;
+    }
+
+    .search-actions {
+        display: flex;
+        gap: .6rem;
+        flex-wrap: wrap;
+    }
+
+    .patient-view-pill {
+        display: flex;
+        align-items: center;
+        min-height: 42px;
+        padding: .6rem .85rem;
+        color: #1E293B;
+        background: #F8FAFC;
+        border: 1.5px solid #D1D5DB;
+        border-radius: 9px;
+        font-size: .9rem;
+        font-weight: 600;
+    }
+
+    .form-label {
+        font-size: .82rem;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: .6rem .85rem;
+        font-size: .9rem;
+        color: #1E293B;
+        background: #FAFAFA;
+        border: 1.5px solid #D1D5DB;
+        border-radius: 9px;
+        transition: border-color .18s, box-shadow .18s;
+        outline: none;
+    }
+
+    .form-control:focus {
+        border-color: #3B82F6;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+    }
+
+    .form-select {
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right .75rem center;
+        background-size: 16px;
+        padding-right: 2.25rem;
+        cursor: pointer;
     }
 
     .alert {
@@ -313,12 +511,13 @@
         border-bottom: 1px solid #E2E8F0;
     }
 
-    .visits-table th:nth-child(1) { width: 72px; }
-    .visits-table th:nth-child(2) { width: 132px; }
-    .visits-table th:nth-child(3) { width: 126px; }
-    .visits-table th:nth-child(4) { width: 22%; }
-    .visits-table th:nth-child(5) { width: 22%; }
-    .visits-table th:nth-child(6) { width: 270px; }
+    .visits-table th:nth-child(1) { width: 70px; }
+    .visits-table th:nth-child(2) { width: 126px; }
+    .visits-table th:nth-child(3) { width: 118px; }
+    .visits-table th:nth-child(4) { width: 18%; }
+    .visits-table th:nth-child(5) { width: 18%; }
+    .visits-table th:nth-child(6) { width: 132px; }
+    .visits-table th:nth-child(7) { width: 260px; }
 
     .th-action { text-align: right; }
 
@@ -390,18 +589,81 @@
     .status-badge--canceled  { background: #F1F5F9; color: #64748B; }
     .status-badge--default   { background: #F1F5F9; color: #64748B; }
 
+    .payment-badge {
+        display: inline-block;
+        margin-top: .24rem;
+        font-size: .68rem;
+        font-weight: 700;
+        border-radius: 20px;
+        padding: .2rem .55rem;
+        white-space: nowrap;
+    }
+
+    .payment-badge--paid {
+        background: #D1FAE5;
+        color: #065F46;
+    }
+
+    .payment-badge--unpaid {
+        background: #FEF3C7;
+        color: #92400E;
+    }
+
+    .payment-form {
+        margin-top: .3rem;
+    }
+
+    .payment-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        font-size: .74rem;
+        font-weight: 700;
+        color: #475569;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .payment-toggle input {
+        width: 16px;
+        height: 16px;
+        margin: 0;
+        accent-color: #16A34A;
+        cursor: pointer;
+    }
+
+    .payment-toggle:has(input:checked) {
+        color: #065F46;
+    }
+
     .td-action { text-align: right; }
 
     .status-form {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: .5rem;
+        width: 100%;
+    }
+
+    .status-form__top {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 68px;
         gap: .45rem;
-        flex-wrap: wrap;
+    }
+
+    .visit-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .45rem;
+    }
+
+    .visit-actions .btn-mini:only-child {
+        grid-column: 1 / -1;
     }
 
     .status-select {
-        width: 132px;
+        width: 100%;
+        min-width: 0;
         font-size: .78rem;
         padding: .38rem .55rem;
         border: 1.5px solid #D1D5DB;
@@ -428,6 +690,8 @@
     .btn-mini {
         display: inline-flex;
         align-items: center;
+        justify-content: center;
+        width: 100%;
         padding: .38rem .68rem;
         font-size: .76rem;
         font-weight: 600;
@@ -491,7 +755,34 @@
         transform: translateY(-1px);
     }
 
+    .btn-secondary {
+        background: #fff;
+        color: #475569;
+        border-color: #D1D5DB;
+    }
+
+    .btn-secondary:hover {
+        background: #F8FAFC;
+        border-color: #94A3B8;
+        color: #1E293B;
+    }
+
     @@media (max-width: 700px) {
+        .search-card {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .search-field {
+            flex-basis: auto;
+            width: 100%;
+        }
+
+        .status-filter {
+            flex-basis: auto;
+            width: 100%;
+        }
+
         .table-card {
             background: transparent;
             border: 0;
@@ -539,7 +830,13 @@
         }
 
         .td-action { text-align: left; }
-        .status-form { justify-content: flex-start; }
-        .status-select { width: 100%; max-width: 170px; }
+
+        .status-form__top {
+            grid-template-columns: minmax(0, 1fr) 72px;
+        }
+
+        .visit-actions {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
     }
 </style>

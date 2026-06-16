@@ -47,7 +47,17 @@ public class PatientsController : Controller
         }
 
         var visits = await _visitService.GetByPatientIdAsync(id, cancellationToken);
-        var documents = await _documentService.GetByPatientIdAsync(id, cancellationToken);
+        IReadOnlyList<PatientDocumentDto> documents = Array.Empty<PatientDocumentDto>();
+
+        try
+        {
+            documents = await _documentService.GetByPatientIdAsync(id, cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Nie udało się pobrać dokumentów pacjenta {PatientId}", id);
+            TempData["ErrorMessage"] = "Pacjent został zapisany, ale nie udało się załadować dokumentów. Sprawdź, czy migracje bazy danych są aktualne.";
+        }
 
         var model = new PatientDetailsViewModel
         {

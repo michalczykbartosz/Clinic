@@ -324,16 +324,11 @@ namespace ClinicManager.Migrations
                     b.Property<int>("MedicalRecordId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("VisitId1")
-                        .HasColumnType("int");
-
                     b.HasKey("ProcedureId");
 
                     b.HasIndex("DoctorId");
 
                     b.HasIndex("MedicalRecordId");
-
-                    b.HasIndex("VisitId1");
 
                     b.ToTable("Procedures");
                 });
@@ -346,8 +341,14 @@ namespace ClinicManager.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("VisitId"));
 
+                    b.Property<decimal>("Cost")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("DoctorId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("bit");
 
                     b.Property<int>("PatientId")
                         .HasColumnType("int");
@@ -370,7 +371,9 @@ namespace ClinicManager.Migrations
                         new
                         {
                             VisitId = 1,
+                            Cost = 0m,
                             DoctorId = 1,
+                            IsPaid = false,
                             PatientId = 1,
                             VisitDateTime = new DateTime(2026, 6, 15, 14, 0, 0, 0, DateTimeKind.Unspecified),
                             VisitStatus = 0
@@ -378,7 +381,9 @@ namespace ClinicManager.Migrations
                         new
                         {
                             VisitId = 2,
+                            Cost = 0m,
                             DoctorId = 2,
+                            IsPaid = false,
                             PatientId = 1,
                             VisitDateTime = new DateTime(2026, 6, 10, 10, 30, 0, 0, DateTimeKind.Unspecified),
                             VisitStatus = 1
@@ -676,10 +681,6 @@ namespace ClinicManager.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ClinicManager.Models.Visit", null)
-                        .WithMany("Procedures")
-                        .HasForeignKey("VisitId1");
-
                     b.Navigation("Doctor");
 
                     b.Navigation("MedicalRecord");
@@ -777,11 +778,6 @@ namespace ClinicManager.Migrations
             modelBuilder.Entity("ClinicManager.Models.Prescription", b =>
                 {
                     b.Navigation("PrescriptionItems");
-                });
-
-            modelBuilder.Entity("ClinicManager.Models.Visit", b =>
-                {
-                    b.Navigation("Procedures");
                 });
 #pragma warning restore 612, 618
         }

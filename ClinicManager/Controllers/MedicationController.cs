@@ -1,10 +1,12 @@
 ﻿using ClinicManager.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ClinicManager.DTOs;
 using ClinicManager.Models;
 
 namespace ClinicManager.Controllers;
 
+[Authorize(Roles = "Admin,Lekarz")]
 public class MedicationController : Controller
 {
     private readonly IMedicationService _medicationService;

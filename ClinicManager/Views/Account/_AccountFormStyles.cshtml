@@ -1,0 +1,195 @@
+<style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    .auth-wrapper {
+        max-width: 960px;
+        margin: 2.5rem auto;
+        padding: 0 1rem;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        color: #1E293B;
+    }
+
+    .auth-shell {
+        display: grid;
+        grid-template-columns: minmax(0, .9fr) minmax(320px, 1fr);
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .auth-panel,
+    .auth-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    }
+
+    .auth-panel {
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 2rem;
+    }
+
+    .auth-panel__icon {
+        width: 52px;
+        height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #EFF6FF;
+        color: #2563EB;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+
+    .auth-panel__icon svg { width: 25px; height: 25px; }
+
+    .auth-panel h1 {
+        margin: 0 0 .45rem;
+        color: #0F172A;
+        font-size: 1.55rem;
+        font-weight: 750;
+    }
+
+    .auth-panel p {
+        margin: 0;
+        color: #64748B;
+        font-size: .92rem;
+        line-height: 1.6;
+    }
+
+    .auth-panel__note {
+        color: #64748B;
+        font-size: .8rem;
+        line-height: 1.5;
+        border-top: 1px solid #E2E8F0;
+        padding-top: 1rem;
+    }
+
+    .auth-card { padding: 1.5rem; }
+
+    .auth-card__header { margin-bottom: 1.2rem; }
+
+    .auth-card__header h2 {
+        margin: 0 0 .25rem;
+        color: #0F172A;
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+
+    .auth-card__header p {
+        margin: 0;
+        color: #94A3B8;
+        font-size: .84rem;
+    }
+
+    .auth-form {
+        display: grid;
+        gap: .9rem;
+    }
+
+    .form-group {
+        display: grid;
+        gap: .38rem;
+        margin: 0;
+    }
+
+    .form-label {
+        font-size: .82rem;
+        font-weight: 600;
+        color: #374151;
+        margin: 0;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: .64rem .85rem;
+        font-size: .9rem;
+        color: #1E293B;
+        background: #FAFAFA;
+        border: 1.5px solid #D1D5DB;
+        border-radius: 9px;
+        transition: border-color .18s, box-shadow .18s, background .18s;
+        outline: none;
+    }
+
+    .form-control:focus {
+        border-color: #3B82F6;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+    }
+
+    .field-error,
+    .validation-summary-errors {
+        color: #B91C1C;
+        font-size: .78rem;
+    }
+
+    .validation-summary-errors ul {
+        margin: 0 0 .6rem;
+        padding-left: 1.1rem;
+    }
+
+    .auth-actions {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        flex-wrap: wrap;
+        margin-top: .25rem;
+    }
+
+    .auth-link {
+        color: #2563EB;
+        font-size: .84rem;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .auth-link:hover {
+        color: #1D4ED8;
+        text-decoration: underline;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .45rem;
+        padding: .65rem 1.35rem;
+        font-size: .875rem;
+        font-weight: 600;
+        border-radius: 9px;
+        border: 1.5px solid transparent;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .18s;
+        font-family: inherit;
+        white-space: nowrap;
+    }
+
+    .btn-primary {
+        background: #2563EB;
+        color: #fff;
+        border-color: #2563EB;
+    }
+
+    .btn-primary:hover {
+        background: #1D4ED8;
+        border-color: #1D4ED8;
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(37,99,235,.3);
+        transform: translateY(-1px);
+    }
+
+    @@media (max-width: 760px) {
+        .auth-shell {
+            grid-template-columns: 1fr;
+        }
+
+        .auth-actions .btn {
+            width: 100%;
+        }
+    }
+</style>

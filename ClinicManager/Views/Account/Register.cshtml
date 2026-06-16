@@ -1,41 +1,72 @@
-﻿@model ClinicManager.DTOs.RegisterDto
+@model ClinicManager.DTOs.RegisterDto
 
 @{
     ViewData["Title"] = "Rejestracja";
     Layout = "_Layout";
 }
 
-<h2>Rejestracja</h2>
+<div class="auth-wrapper">
+    <div class="auth-shell">
+        <section class="auth-panel">
+            <div>
+                <div class="auth-panel__icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </div>
+                <h1>Rejestracja pacjenta</h1>
+                <p>Utwórz konto, aby widzieć swoje wizyty i ich aktualny status w panelu pacjenta.</p>
+            </div>
+            <div class="auth-panel__note">
+                PESEL służy do powiązania konta z kartoteką pacjenta.
+            </div>
+        </section>
 
-<form asp-action="Register" method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <section class="auth-card">
+            <div class="auth-card__header">
+                <h2>Nowe konto</h2>
+                <p>Hasło powinno mieć co najmniej 10 znaków.</p>
+            </div>
 
-    <div class="form-group">
-        <label asp-for="Email"></label>
-        <input asp-for="Email" class="form-control" />
-        <span asp-validation-for="Email" class="text-danger"></span>
+            <form asp-action="Register" method="post" class="auth-form">
+                <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+                <div class="form-group">
+                    <label asp-for="Email" class="form-label">Adres e-mail</label>
+                    <input asp-for="Email" class="form-control" autocomplete="email" />
+                    <span asp-validation-for="Email" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Pesel" class="form-label">PESEL</label>
+                    <input asp-for="Pesel" class="form-control" inputmode="numeric" maxlength="11" autocomplete="off" />
+                    <span asp-validation-for="Pesel" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Password" class="form-label">Hasło</label>
+                    <input asp-for="Password" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="Password" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="PasswordConfirm" class="form-label">Powtórz hasło</label>
+                    <input asp-for="PasswordConfirm" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="PasswordConfirm" class="field-error"></span>
+                </div>
+
+                <div class="auth-actions">
+                    <button type="submit" class="btn btn-primary">Zarejestruj</button>
+                    <a class="auth-link" asp-controller="Account" asp-action="Login">Mam już konto</a>
+                </div>
+            </form>
+        </section>
     </div>
+</div>
 
-    <div class="form-group">
-        <label asp-for="Password"></label>
-        <input asp-for="Password" class="form-control" />
-        <span asp-validation-for="Password" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="PasswordConfirm"></label>
-        <input asp-for="PasswordConfirm" class="form-control" />
-        <span asp-validation-for="PasswordConfirm" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Pesel"></label>
-        <input asp-for="Pesel" class="form-control" />
-        <span asp-validation-for="Pesel" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Zarejestruj</button>
-</form>
+@await Html.PartialAsync("_AccountFormStyles")
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

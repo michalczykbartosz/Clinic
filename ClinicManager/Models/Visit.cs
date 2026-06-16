@@ -16,6 +16,8 @@ public class Visit
     public int PatientId { get; set; }
     public int DoctorId { get; set; }
     public DateTime VisitDateTime { get; set; }
+    public decimal Cost { get; set; }
+    public bool IsPaid { get; set; }
     public Doctor Doctor { get; set; }
     public Patient Patient { get; set; }
     [NotMapped]
