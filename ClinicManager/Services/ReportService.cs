@@ -7,10 +7,12 @@ namespace ClinicManager.Services;
 public class ReportService : IReportService
 {
     private readonly ClinicDbContext _context;
+    private readonly ILogger<ReportService> _logger;
 
-    public ReportService(ClinicDbContext context)
+    public ReportService(ClinicDbContext context, ILogger<ReportService> logger)
     {
         _context = context;
+        _logger = logger;
     }
     
     public async Task<(bool success, ReportCostDto?, string error)> GetReportCostAsync(int? patientId, int? doctorId,
@@ -31,6 +33,15 @@ public class ReportService : IReportService
             DoctorId = doctorId ?? 0,
             PatientId = patientId ?? 0
         };
+
+        _logger.LogInformation(
+            "Obliczono raport kosztów: PatientId={PatientId}, DoctorId={DoctorId}, StartDate={StartDate}, EndDate={EndDate}, Cost={Cost}",
+            patientId,
+            doctorId,
+            startDate,
+            endDate,
+            result);
+
         return (true, raportDto, string.Empty);
     }
     

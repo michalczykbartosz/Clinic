@@ -10,9 +10,12 @@ namespace ClinicManager.Controllers;
 public class ClinicalNoteController : Controller
 {
     private readonly IClinicalNoteService _noteService;
-    public ClinicalNoteController(IClinicalNoteService noteService)
+    private readonly ILogger<ClinicalNoteController> _logger;
+
+    public ClinicalNoteController(IClinicalNoteService noteService, ILogger<ClinicalNoteController> logger)
     {
         _noteService = noteService;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -34,7 +37,13 @@ public class ClinicalNoteController : Controller
     {
         if (!ModelState.IsValid) return View("GetNote", dtoNote);
         var (success, error) = await _noteService.CreateOrUpdateNoteAsync(dtoNote);
-        if (success is true) return RedirectToAction("Index","Visits");
+        if (success is true)
+        {
+            _logger.LogInformation("Zapisano notatkę kliniczną dla wizyty {VisitId}", dtoNote.VisitId);
+            return RedirectToAction("Index","Visits");
+        }
+
+        _logger.LogWarning("Nie udało się zapisać notatki klinicznej dla wizyty {VisitId}: {Error}", dtoNote.VisitId, error);
         ModelState.AddModelError(string.Empty, error);
         return View("GetNote", dtoNote);
 

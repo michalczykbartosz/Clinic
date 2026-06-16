@@ -7,10 +7,12 @@ namespace ClinicManager.Controllers;
 public class AccountController : Controller
 {
     private readonly IAuthenticationService _authService;
+    private readonly ILogger<AccountController> _logger;
 
-    public AccountController(IAuthenticationService authService)
+    public AccountController(IAuthenticationService authService, ILogger<AccountController> logger)
     {
         _authService = authService;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -26,7 +28,13 @@ public class AccountController : Controller
         
         var (success, errors) = await _authService.RegisterAsync(model);
         
-        if (success) return RedirectToAction("Index", "Home");
+        if (success)
+        {
+            _logger.LogInformation("Zarejestrowano użytkownika {Email}", model.Email);
+            return RedirectToAction("Index", "Home");
+        }
+
+        _logger.LogWarning("Nieudana rejestracja użytkownika {Email}: {Errors}", model.Email, string.Join("; ", errors));
 
         foreach (var error in errors)
         {
@@ -53,9 +61,11 @@ public class AccountController : Controller
         
         if (success)
         {
+            _logger.LogInformation("Zalogowano użytkownika {Email}", model.Email);
             return RedirectToAction("Index", "Home");
         }
 
+        _logger.LogWarning("Nieudana próba logowania użytkownika {Email}", model.Email);
         ModelState.AddModelError(string.Empty, errorMessage);
         return View(model);
     }
@@ -63,7 +73,9 @@ public class AccountController : Controller
     [HttpPost]
     public async Task<IActionResult> Logout()
     {
+        var userName = User.Identity?.Name;
         await _authService.LogoutAsync();
+        _logger.LogInformation("Wylogowano użytkownika {UserName}", userName);
         return RedirectToAction("Index", "Home");
     }
 }

@@ -8,10 +8,12 @@ namespace ClinicManager.Controllers;
 public class MedicationController : Controller
 {
     private readonly IMedicationService _medicationService;
+    private readonly ILogger<MedicationController> _logger;
 
-    public MedicationController(IMedicationService medicationService)
+    public MedicationController(IMedicationService medicationService, ILogger<MedicationController> logger)
     {
         _medicationService = medicationService;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -25,8 +27,12 @@ public class MedicationController : Controller
     [HttpGet]
     public async Task<IActionResult> Edit(int medicationId)
     {
-        MedicationDto wantedMedicationDto = await _medicationService.GetByIdAsync(medicationId);
-        if (wantedMedicationDto is null) return RedirectToAction("Index", "Medication");
+        MedicationDto? wantedMedicationDto = await _medicationService.GetByIdAsync(medicationId);
+        if (wantedMedicationDto is null)
+        {
+            _logger.LogWarning("Nie znaleziono leku {MedicationId} do edycji.", medicationId);
+            return RedirectToAction("Index", "Medication");
+        }
         return View(wantedMedicationDto);
     }
 
@@ -35,7 +41,13 @@ public class MedicationController : Controller
     {
         if (!ModelState.IsValid) return View(newMedicationdto);
         var (success, error) = await _medicationService.UpdateMedicationAsync(newMedicationdto);
-        if (success) return RedirectToAction("Index", "Medication");
+        if (success)
+        {
+            _logger.LogInformation("Zaktualizowano lek {MedicationId}", newMedicationdto.MedicationId);
+            return RedirectToAction("Index", "Medication");
+        }
+
+        _logger.LogWarning("Nie udało się zaktualizować leku {MedicationId}: {Error}", newMedicationdto.MedicationId, error);
         ModelState.AddModelError(string.Empty,error);
         return View(newMedicationdto);
     }
@@ -45,7 +57,13 @@ public class MedicationController : Controller
     {
         if (!ModelState.IsValid) return View(newMedicationDto);
         var (success,error) = await _medicationService.AddMedicationAsync(newMedicationDto);
-        if(success) return RedirectToAction("Index", "Medication");
+        if(success)
+        {
+            _logger.LogInformation("Dodano lek {MedicationName}", newMedicationDto.Name);
+            return RedirectToAction("Index", "Medication");
+        }
+
+        _logger.LogWarning("Nie udało się dodać leku {MedicationName}: {Error}", newMedicationDto.Name, error);
         ModelState.AddModelError(string.Empty,error);
         return View(newMedicationDto);
     }

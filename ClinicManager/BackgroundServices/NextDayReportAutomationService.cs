@@ -15,14 +15,20 @@ namespace ClinicManager.BackgroundServices;
 public class NextDayReportAutomationService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    public NextDayReportAutomationService(IServiceScopeFactory scopeFactory)
+    private readonly ILogger<NextDayReportAutomationService> _logger;
+
+    public NextDayReportAutomationService(
+        IServiceScopeFactory scopeFactory,
+        ILogger<NextDayReportAutomationService> logger)
     {
         _scopeFactory = scopeFactory;
+        _logger = logger;
     }
     
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         using var timer = new PeriodicTimer(TimeSpan.FromMinutes(2 ));
+        _logger.LogInformation("Uruchomiono usługę generowania raportu wizyt na kolejny dzień.");
 
         while (await timer.WaitForNextTickAsync(stoppingToken))
         {
@@ -34,6 +40,8 @@ public class NextDayReportAutomationService : BackgroundService
                     var tomorrow = DateTime.Today.AddDays(1);
                     DateTime startTomorrow = tomorrow;
                     DateTime endTomorrow = tomorrow.AddDays(1).AddTicks(-1);
+
+                    _logger.LogInformation("Rozpoczęto generowanie raportu wizyt na dzień {ReportDate}", tomorrow);
                     
                     var tomorrowVisitsCount = await context.Visits
                         .Where(v => v.VisitDateTime >= startTomorrow && v.VisitDateTime <= endTomorrow)
@@ -111,13 +119,20 @@ public class NextDayReportAutomationService : BackgroundService
         await client.SendAsync(message, stoppingToken);
         await client.DisconnectAsync(true, stoppingToken);
     }
+                        _logger.LogInformation(
+                            "Wysłano automatyczny raport wizyt na dzień {ReportDate}. Liczba wizyt: {VisitCount}",
+                            tomorrow,
+                            tomorrowVisitsCount);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Brak wizyt do raportu na dzień {ReportDate}", tomorrow);
                     }
                 }
             }
             catch (Exception ex)
             {
-
-                Console.WriteLine($"[LOG BACKGROUND ERROR] Coś poszło nie tak: {ex.Message}");
+                _logger.LogError(ex, "Nie udało się wygenerować lub wysłać automatycznego raportu wizyt.");
             }
         }
     }
