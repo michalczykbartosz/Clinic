@@ -8,10 +8,12 @@ namespace ClinicManager.Controllers;
 public class ReportController : Controller
 {
     private readonly IReportService _reportService;
+    private readonly ILogger<ReportController> _logger;
 
-    public ReportController(IReportService reportService)
+    public ReportController(IReportService reportService, ILogger<ReportController> logger)
     {
         _reportService = reportService;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -32,10 +34,23 @@ public class ReportController : Controller
 
         if (!success)
         {
+            _logger.LogError(
+                "Nie udało się wygenerować raportu kosztów. PatientId={PatientId}, DoctorId={DoctorId}, StartDate={StartDate}, EndDate={EndDate}, Error={Error}",
+                patientId,
+                doctorId,
+                startDate,
+                endDate,
+                error);
             ModelState.AddModelError(string.Empty,"Wystąpił błąd podczas pobierania danych!");
             return View();
         }
 
+        _logger.LogInformation(
+            "Wygenerowano raport kosztów. PatientId={PatientId}, DoctorId={DoctorId}, StartDate={StartDate}, EndDate={EndDate}",
+            patientId,
+            doctorId,
+            startDate,
+            endDate);
         return View(raport);
     }
 }
