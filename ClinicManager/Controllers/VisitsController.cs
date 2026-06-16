@@ -5,6 +5,7 @@ using ClinicManager.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Security.Claims;
 
 namespace ClinicManager.Controllers;
 
@@ -29,10 +30,30 @@ public class VisitsController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Rejestratorka,Lekarz")]
-    public async Task<IActionResult> Index(CancellationToken cancellationToken)
+    [Authorize(Roles = "Admin,Rejestratorka,Lekarz,Pacjent")]
+    public async Task<IActionResult> Index(string? query, VisitState? status, CancellationToken cancellationToken)
     {
-        var visits = await _visitService.GetListAsync(cancellationToken);
+        var isPatient = User.IsInRole("Pacjent");
+        ViewData["IsPatientView"] = isPatient;
+        ViewData["Query"] = query;
+        ViewData["Status"] = status;
+
+        if (isPatient)
+        {
+            ViewData["Query"] = string.Empty;
+
+            var patientPesel = User.FindFirstValue("PatientPesel");
+            if (string.IsNullOrWhiteSpace(patientPesel))
+            {
+                ViewData["PatientAccessMessage"] = "Nie udało się powiązać konta z kartoteką pacjenta. Zarejestruj konto z poprawnym numerem PESEL albo poproś recepcję o sprawdzenie danych.";
+                return View(Array.Empty<VisitListItemDto>());
+            }
+
+            var patientVisits = await _visitService.GetListForPatientPeselAsync(patientPesel, status, cancellationToken);
+            return View(patientVisits);
+        }
+
+        var visits = await _visitService.GetListAsync(query, status, cancellationToken);
         return View(visits);
     }
 
@@ -87,12 +108,12 @@ public class VisitsController : Controller
     [HttpPost]
     [Authorize(Roles = "Admin,Rejestratorka,Lekarz")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UpdateStatus(int id, UpdateVisitStatusDto model, CancellationToken cancellationToken)
+    public async Task<IActionResult> UpdateStatus(int id, UpdateVisitStatusDto model, string? query, VisitState? status, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid || !Enum.IsDefined(typeof(VisitState), model.VisitStatus))
         {
             TempData["ErrorMessage"] = "Wybrano nieprawidłowy status wizyty.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), new { query, status });
         }
 
         var updated = await _visitService.UpdateStatusAsync(id, model.VisitStatus, cancellationToken);
@@ -102,7 +123,25 @@ public class VisitsController : Controller
         }
 
         TempData["SuccessMessage"] = "Status wizyty został zaktualizowany.";
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Index), new { query, status });
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin,Rejestratorka")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdatePayment(int id, string? query, VisitState? status, CancellationToken cancellationToken)
+    {
+        var isPaid = Request.Form["isPaid"].Any(value =>
+            string.Equals(value, "true", StringComparison.OrdinalIgnoreCase));
+
+        var updated = await _visitService.UpdatePaymentAsync(id, isPaid, cancellationToken);
+        if (!updated)
+        {
+            return NotFound();
+        }
+
+        TempData["SuccessMessage"] = "Płatność wizyty została zaktualizowana.";
+        return RedirectToAction(nameof(Index), new { query, status });
     }
 
     private async Task<CreateVisitViewModel> BuildCreateVisitViewModelAsync(

@@ -27,6 +27,7 @@ public class ClinicDbContext : IdentityDbContext
     {
         base.OnModelCreating(modelBuilder); 
         modelBuilder.Entity<Procedure>().Property(x => x.Cost).HasColumnType("decimal(18,2)");
+        modelBuilder.Entity<Visit>().Property(x => x.Cost).HasColumnType("decimal(18,2)");
         modelBuilder.Entity<PatientDocument>()
             .HasOne(document => document.Patient)
             .WithMany(patient => patient.Documents)
@@ -48,8 +49,8 @@ public class ClinicDbContext : IdentityDbContext
         modelBuilder.Entity<IdentityRole>().HasData(
             new IdentityRole { Id = "2", Name = "Admin", NormalizedName = "ADMIN", ConcurrencyStamp = "test" });
         modelBuilder.Entity<Visit>().HasData(
-            new Visit { VisitId = 1, VisitStatus = VisitState.Planned, PatientId = 1, DoctorId = 1, VisitDateTime = new DateTime(2026, 6, 15, 14, 0, 0) },
-            new Visit { VisitId = 2, VisitStatus = VisitState.InProgress, PatientId = 1, DoctorId = 2, VisitDateTime = new DateTime(2026, 6, 10, 10, 30, 0) });
+            new Visit { VisitId = 1, VisitStatus = VisitState.Planned, PatientId = 1, DoctorId = 1, VisitDateTime = new DateTime(2026, 6, 15, 14, 0, 0), Cost = 0m, IsPaid = false },
+            new Visit { VisitId = 2, VisitStatus = VisitState.InProgress, PatientId = 1, DoctorId = 2, VisitDateTime = new DateTime(2026, 6, 10, 10, 30, 0), Cost = 0m, IsPaid = false });
     }
     
 }

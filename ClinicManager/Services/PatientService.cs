@@ -57,8 +57,29 @@ public class PatientService : IPatientService
         return patient is null ? null : _patientMapper.ToDto(patient);
     }
 
+    public async Task<PatientDto?> GetByPeselAsync(string pesel, CancellationToken cancellationToken = default)
+    {
+        var normalizedPesel = pesel.Trim();
+
+        var patient = await _dbContext.Patients
+            .AsNoTracking()
+            .FirstOrDefaultAsync(patient => patient.PESEL == normalizedPesel, cancellationToken);
+
+        return patient is null ? null : _patientMapper.ToDto(patient);
+    }
+
     public async Task<PatientDto> CreateAsync(UpsertPatientDto dto, CancellationToken cancellationToken = default)
     {
+       
+
+        var peselExists = await _dbContext.Patients
+            .AnyAsync(patient => patient.PESEL == dto.PESEL, cancellationToken);
+
+        if (peselExists)
+        {
+            throw new InvalidOperationException("Pacjent o podanym numerze PESEL już istnieje.");
+        }
+
         var patient = _patientMapper.ToEntity(dto);
 
         _dbContext.Patients.Add(patient);

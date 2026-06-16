@@ -31,12 +31,24 @@
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Visits" asp-action="Index">Wizyty</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Schedule" asp-action="Index">Grafik</a>
+                            </li>
                         }
-                        @if (User.IsInRole("Admin") || User.IsInRole("Rejestratorka"))
+                        @if (User.IsInRole("Pacjent"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Visits" asp-action="Index">Przejdź do wizyt</a>
+                            </li>
+                        }
+                        @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="AdminUsers" asp-action="GetRoles">Konta</a>
                             </li>
+                        }
+                        @if (User.IsInRole("Admin") || User.IsInRole("Lekarz"))
+                        {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Medication" asp-action="Index">Leki</a>
                             </li>
@@ -57,17 +69,6 @@
                                 </form>
                             </li>
                         </ul>
-                    }
-                    else
-                    {
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a asp-controller="Account" asp-action="Register">Zarejestruj</a>
-                        </li>
-                        <li class="nav-item">
-                            <a asp-controller="Account" asp-action="Login">Zaloguj</a>
-                        </li>
-                    </ul>
                     }
                 </div>
             </div>

@@ -13,6 +13,7 @@ public partial class VisitMapper
 
     [MapperIgnoreTarget(nameof(Visit.VisitId))]
     [MapperIgnoreTarget(nameof(Visit.VisitStatus))]
+    [MapperIgnoreTarget(nameof(Visit.IsPaid))]
     [MapperIgnoreTarget(nameof(Visit.Patient))]
     [MapperIgnoreTarget(nameof(Visit.Doctor))]
     public partial Visit ToEntity(CreateVisitDto dto);

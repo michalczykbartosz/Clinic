@@ -1,29 +1,60 @@
-﻿@model ClinicManager.DTOs.LoginDto
+@model ClinicManager.DTOs.LoginDto
 
 @{
     ViewData["Title"] = "Logowanie";
     Layout = "_Layout";
 }
 
-<h2>Logowanie</h2>
+<div class="auth-wrapper">
+    <div class="auth-shell">
+        <section class="auth-panel">
+            <div>
+                <div class="auth-panel__icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="10" rx="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                </div>
+                <h1>Logowanie</h1>
+                <p>Wejdź do panelu ClinicManager i przejdź do wizyt, dokumentacji oraz zadań zgodnych z Twoją rolą.</p>
+            </div>
+            <div class="auth-panel__note">
+                Dane medyczne są widoczne tylko dla uprawnionych użytkowników.
+            </div>
+        </section>
 
-<form asp-action="Login" method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <section class="auth-card">
+            <div class="auth-card__header">
+                <h2>Dostęp do systemu</h2>
+                <p>Podaj adres e-mail i hasło.</p>
+            </div>
 
-    <div class="form-group">
-        <label asp-for="Email"></label>
-        <input asp-for="Email" class="form-control" />
-        <span asp-validation-for="Email" class="text-danger"></span>
+            <form asp-action="Login" method="post" class="auth-form">
+                <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+                <div class="form-group">
+                    <label asp-for="Email" class="form-label">Adres e-mail</label>
+                    <input asp-for="Email" class="form-control" autocomplete="email" />
+                    <span asp-validation-for="Email" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Password" class="form-label">Hasło</label>
+                    <input asp-for="Password" class="form-control" autocomplete="current-password" />
+                    <span asp-validation-for="Password" class="field-error"></span>
+                </div>
+
+                <div class="auth-actions">
+                    <button type="submit" class="btn btn-primary">Zaloguj</button>
+                    <a class="auth-link" asp-controller="Account" asp-action="Register">Załóż konto pacjenta</a>
+                </div>
+            </form>
+        </section>
     </div>
+</div>
 
-    <div class="form-group">
-        <label asp-for="Password"></label>
-        <input asp-for="Password" class="form-control" />
-        <span asp-validation-for="Password" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Zaloguj</button>
-</form>
+@await Html.PartialAsync("_AccountFormStyles")
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
