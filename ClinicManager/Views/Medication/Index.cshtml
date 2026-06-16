@@ -1,46 +1,113 @@
-﻿@model IReadOnlyList<ClinicManager.DTOs.MedicationDto>
+@model IReadOnlyList<ClinicManager.DTOs.MedicationDto>
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Leki</h2>
-        <a asp-action="Save" class="btn btn-primary">Dodaj lek</a>
+@{
+    ViewData["Title"] = "Leki";
+}
+
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="page-header__left">
+            <div class="page-header__icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.5 20.5l10-10a4.24 4.24 0 0 0-6-6l-10 10a4.24 4.24 0 0 0 6 6z"/>
+                    <path d="M8.5 8.5l7 7"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="page-header__title">Leki</h1>
+                <p class="page-header__sub">@((Model?.Count ?? 0)) leków w katalogu</p>
+            </div>
+        </div>
+        <a asp-action="Save" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Dodaj lek
+        </a>
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-striped align-middle">
-            <thead>
-            <tr>
-                <th>Nazwa leku</th>
-                <th>Dawka</th>
-                <th>Producent</th>
-                <th class="text-end">Akcje</th>
-            </tr>
-            </thead>
-            <tbody>
-            @if (Model != null && Model.Any())
-            {
-                @foreach (var med in Model)
-                {
+    @if (Model == null || !Model.Any())
+    {
+        <div class="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.5 20.5l10-10a4.24 4.24 0 0 0-6-6l-10 10a4.24 4.24 0 0 0 6 6z"/>
+                <path d="M8.5 8.5l7 7"/>
+            </svg>
+            <p>Brak leków w katalogu.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-card">
+            <div class="table-scroll">
+                <table class="data-table">
+                    <thead>
                     <tr>
-                        <td class="fw-bold">@med.Name</td>
-                        <td>@med.Dose</td>
-                        <td>@med.Manufacturer</td>
-                        <td class="text-end">
-                            <div class="btn-group" role="group">
-                                <a asp-action="Edit" asp-route-medicationId="@med.MedicationId" class="btn btn-outline-primary btn-sm">Edytuj</a>
-                                <a asp-action="Delete" asp-route-medicationId="@med.MedicationId" class="btn btn-outline-danger btn-sm">Usuń</a>
-                            </div>
-                        </td>
+                        <th>Nazwa leku</th>
+                        <th>Dawka</th>
+                        <th>Producent</th>
+                        <th class="th-action">Akcje</th>
                     </tr>
-                }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="4" class="text-center text-muted">Brak leków w katalogu.</td>
-                </tr>
-            }
-            </tbody>
-        </table>
-    </div>
+                    </thead>
+                    <tbody>
+                    @foreach (var med in Model)
+                    {
+                        <tr>
+                            <td><span class="name-strong">@med.Name</span></td>
+                            <td><span class="dose-chip">@med.Dose</span></td>
+                            <td class="cell--muted">@med.Manufacturer</td>
+                            <td class="td-action">
+                                <div class="action-group">
+                                    <a asp-action="Edit" asp-route-medicationId="@med.MedicationId" class="btn-mini btn-mini--primary">Edytuj</a>
+                                    <a asp-action="Delete" asp-route-medicationId="@med.MedicationId" class="btn-mini btn-mini--danger">Usuń</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
 </div>
+
+<style>
+    *, *::before, *::after { box-sizing: border-box; }
+    .page-wrapper { max-width: 920px; margin: 2.5rem auto; padding: 0 1rem; font-family: 'Inter', system-ui, -apple-system, sans-serif; color: #1E293B; }
+    .page-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .page-header__left { display: flex; align-items: center; gap: 1rem; }
+    .page-header__icon { width: 48px; height: 48px; background: #EFF6FF; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #2563EB; flex-shrink: 0; }
+    .page-header__icon svg { width: 22px; height: 22px; }
+    .page-header__title { font-size: 1.5rem; font-weight: 700; color: #0F172A; margin: 0 0 .15rem; letter-spacing: -.02em; }
+    .page-header__sub { font-size: .82rem; color: #94A3B8; margin: 0; }
+    .empty-state { display: flex; flex-direction: column; align-items: center; gap: .75rem; padding: 3.5rem 2rem; background: #fff; border: 1px dashed #D1D5DB; border-radius: 14px; color: #94A3B8; text-align: center; }
+    .empty-state svg { width: 42px; height: 42px; }
+    .empty-state p { font-size: .9rem; margin: 0; }
+    .table-card { background: #fff; border: 1px solid #E2E8F0; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+    .table-scroll { overflow-x: auto; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    .data-table thead tr { background: #F8FAFC; }
+    .data-table th { padding: .75rem 1.1rem; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #64748B; text-align: left; border-bottom: 1px solid #E2E8F0; white-space: nowrap; }
+    .data-table td { padding: .85rem 1.1rem; border-bottom: 1px solid #F1F5F9; vertical-align: middle; white-space: nowrap; }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover { background: #FAFBFF; }
+    .th-action, .td-action { text-align: right; }
+    .name-strong { color: #0F172A; font-weight: 700; }
+    .dose-chip { display: inline-block; font-size: .74rem; font-weight: 600; color: #64748B; background: #F1F5F9; border-radius: 6px; padding: .2rem .55rem; }
+    .cell--muted { color: #64748B; }
+    .action-group { display: inline-flex; align-items: center; justify-content: flex-end; gap: .45rem; }
+    .btn, .btn-mini { display: inline-flex; align-items: center; justify-content: center; gap: .45rem; font-weight: 600; border: 1.5px solid transparent; cursor: pointer; text-decoration: none; transition: all .18s; font-family: inherit; white-space: nowrap; }
+    .btn { padding: .6rem 1.3rem; font-size: .875rem; border-radius: 9px; }
+    .btn-mini { padding: .4rem .8rem; font-size: .78rem; border-radius: 7px; }
+    .btn-primary { background: #2563EB; color: #fff; border-color: #2563EB; }
+    .btn-primary:hover { background: #1D4ED8; border-color: #1D4ED8; box-shadow: 0 4px 12px rgba(37,99,235,.3); transform: translateY(-1px); }
+    .btn-mini--primary { background: #EFF6FF; color: #2563EB; border-color: #BFDBFE; }
+    .btn-mini--primary:hover { background: #2563EB; color: #fff; border-color: #2563EB; }
+    .btn-mini--danger { background: #FEF2F2; color: #DC2626; border-color: #FECACA; }
+    .btn-mini--danger:hover { background: #DC2626; color: #fff; border-color: #DC2626; }
+    @@media (max-width: 700px) { .data-table th, .data-table td { padding: .7rem .8rem; } }
+</style>

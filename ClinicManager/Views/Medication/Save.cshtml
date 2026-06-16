@@ -1,41 +1,43 @@
-﻿@model ClinicManager.DTOs.MedicationDto
+@model ClinicManager.DTOs.MedicationDto
 
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Dodaj nowy lek</h4>
-                </div>
-                <div class="card-body">
-                    <form asp-action="Save" method="post">
-                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+@{
+    ViewData["Title"] = "Dodaj lek";
+}
 
-                        <div class="mb-3">
-                            <label asp-for="Name" class="form-label">Nazwa leku</label>
-                            <input asp-for="Name" class="form-control" placeholder="np. Paracetamol" />
-                            <span asp-validation-for="Name" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="Dose" class="form-label">Dawka</label>
-                            <input asp-for="Dose" class="form-control" placeholder="np. 500mg" />
-                            <span asp-validation-for="Dose" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="Manufacturer" class="form-label">Producent</label>
-                            <input asp-for="Manufacturer" class="form-control" placeholder="np. Polpharma" />
-                            <span asp-validation-for="Manufacturer" class="text-danger"></span>
-                        </div>
-
-                        <div class="d-flex justify-content-end gap-2">
-                            <a asp-action="Index" class="btn btn-secondary">Anuluj</a>
-                            <button type="submit" class="btn btn-success">Zapisz lek</button>
-                        </div>
-                    </form>
-                </div>
+<div class="form-wrapper">
+    <div class="page-header">
+        <div class="page-header__left">
+            <div class="page-header__icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.5 20.5l10-10a4.24 4.24 0 0 0-6-6l-10 10a4.24 4.24 0 0 0 6 6z"/>
+                    <path d="M8.5 8.5l7 7"/>
+                    <line x1="19" y1="16" x2="19" y2="22"/>
+                    <line x1="16" y1="19" x2="22" y2="19"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="page-header__title">Dodaj lek</h1>
+                <p class="page-header__sub">Utwórz nowy wpis w katalogu leków</p>
             </div>
         </div>
+        <a asp-action="Index" class="btn btn-secondary">Powrót</a>
+    </div>
+
+    <div class="form-card">
+        <form asp-action="Save" method="post">
+            <partial name="_MedicationForm" model="Model" />
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Zapisz lek</button>
+                <a asp-action="Index" class="btn btn-secondary">Anuluj</a>
+            </div>
+        </form>
     </div>
 </div>
+
+<partial name="_MedicationFormStyles" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
