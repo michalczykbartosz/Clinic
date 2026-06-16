@@ -21,63 +21,51 @@ try
     builder.Logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Information);
     builder.Host.UseNLog();
 
-    // Add services to the container.
-    builder.Services.AddControllersWithViews();
+//dodanie serwisu bazy danych
+builder.Services.AddDbContext<ClinicDbContext>(x => x
+    .UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+    .LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information)
+    .EnableSensitiveDataLogging());
+//dodanie serwisu ASP.NET Identity
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options=>
+{
+    options.Password.RequiredLength = 10;
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.User.RequireUniqueEmail = true;
+}).AddEntityFrameworkStores<ClinicDbContext>();
 
-    //dodanie serwisu bazy danych
-    builder.Services.AddDbContext<ClinicDbContext>(x => x
-        .UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-        .EnableSensitiveDataLogging(builder.Environment.IsDevelopment()));
-    //dodanie serwisu ASP.NET Identity
-    builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
-    {
-        options.Password.RequiredLength = 10;
-        options.Lockout.MaxFailedAccessAttempts = 5;
-        options.User.RequireUniqueEmail = true;
-    }).AddEntityFrameworkStores<ClinicDbContext>();
+// Mapperly mappers
+builder.Services.AddScoped<PatientMapper>();
+builder.Services.AddScoped<DoctorMapper>();
+builder.Services.AddScoped<VisitMapper>();
+builder.Services.AddScoped<MedicationMapper>();
+builder.Services.AddScoped<ClinicalNoteMapper>();
+builder.Services.AddScoped<PrescriptionItemMapper>();
 
-    // Mapperly mappers
-    builder.Services.AddScoped<PatientMapper>();
-    builder.Services.AddScoped<DoctorMapper>();
-    builder.Services.AddScoped<VisitMapper>();
-    builder.Services.AddScoped<MedicationMapper>();
-    builder.Services.AddScoped<ClinicalNoteMapper>();
+// Business services
+builder.Services.AddScoped<IPatientService, PatientService>();
+builder.Services.AddScoped<IDoctorService, DoctorService>();
+builder.Services.AddScoped<IVisitService, VisitService>();
+builder.Services.AddScoped<IMedicationService, MedicationService>();
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IUserManagementService, UserManagementService>();
+builder.Services.AddScoped<IClinicalNoteService, ClinicalNoteService>();
+builder.Services.AddScoped<IProcedureService, ProcedureService>();
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IVisitMedicationService, VisitMedicationService>();
 
-    // Business services
-    builder.Services.AddScoped<IPatientService, PatientService>();
-    builder.Services.AddScoped<IDoctorService, DoctorService>();
-    builder.Services.AddScoped<IVisitService, VisitService>();
-    builder.Services.AddScoped<IMedicationService, MedicationService>();
-    builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-    builder.Services.AddScoped<IUserManagementService, UserManagementService>();
-    builder.Services.AddScoped<IClinicalNoteService, ClinicalNoteService>();
-    builder.Services.AddScoped<IProcedureService, ProcedureService>();
-    builder.Services.AddScoped<IReportService, ReportService>();
+//BackgroundServices
+builder.Services.AddHostedService<NextDayReportAutomationService>();
+    
+var app = builder.Build();
 
-    //BackgroundServices
-    builder.Services.AddHostedService<NextDayReportAutomationService>();
-
-    var app = builder.Build();
-
-    // Configure the HTTP request pipeline.
-    if (!app.Environment.IsDevelopment())
-    {
-        app.UseExceptionHandler("/Home/Error");
-        // The default HSTS value is 30 days. You may want to change it for production scenarios, see https://aka.ms/aspnetcore-hsts.
-        app.UseHsts();
-    }
-
-    app.Use(async (context, next) =>
-    {
-        try
-        {
-            await next();
-        }
-        catch (Exception exception)
-        {
-            var requestLogger = context.RequestServices
-                .GetRequiredService<ILoggerFactory>()
-                .CreateLogger("GlobalExceptionMiddleware");
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
+}
 
             requestLogger.LogError(
                 exception,

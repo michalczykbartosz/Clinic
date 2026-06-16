@@ -109,7 +109,7 @@
                         <th>Status</th>
                         <th>Lekarz</th>
                         <th>Specjalizacja</th>
-                        <th class="th-action">Procedury</th>
+                        <th class="th-action">Obsługa</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -131,6 +131,12 @@
                                    asp-action="Index"
                                    asp-route-visitId="@visit.VisitId">
                                     Procedury
+                                </a>
+                                <a class="btn-mini btn-mini--secondary"
+                                   asp-controller="VisitMedications"
+                                   asp-action="Index"
+                                   asp-route-visitId="@visit.VisitId">
+                                    Leki
                                 </a>
                             </td>
                         </tr>
@@ -181,6 +187,7 @@
     .data-table tbody tr:last-child td { border-bottom: none; }
     .data-table tbody tr:hover { background: #FAFBFF; }
     .th-action, .td-action { text-align: right; }
+    .td-action .btn-mini + .btn-mini { margin-left: .35rem; }
     .id-chip { display: inline-block; font-size: .74rem; font-weight: 600; color: #64748B; background: #F1F5F9; border-radius: 6px; padding: .2rem .55rem; font-variant-numeric: tabular-nums; }
     .cell--date { font-variant-numeric: tabular-nums; color: #475569; }
     .cell--muted { color: #94A3B8; }

@@ -184,6 +184,12 @@
                                             @(visit.HasClinicalNote ? "Edytuj notatkę" : "Dodaj notatkę")
                                         </a>
                                     }
+                                    <a class="btn-mini btn-mini--secondary"
+                                       asp-controller="VisitMedications"
+                                       asp-action="Index"
+                                       asp-route-visitId="@visit.VisitId">
+                                        Leki
+                                    </a>
                                 </form>
                             </td>
                         }
