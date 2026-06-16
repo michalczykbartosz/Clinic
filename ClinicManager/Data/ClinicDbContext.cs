@@ -21,11 +21,17 @@ public class ClinicDbContext : IdentityDbContext
     public DbSet<PrescriptionItem> PrescriptionItems { get; set; }
     public DbSet<Procedure> Procedures { get; set; }
     public DbSet<Visit> Visits { get; set; }
+    public DbSet<PatientDocument> PatientDocuments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder); 
         modelBuilder.Entity<Procedure>().Property(x => x.Cost).HasColumnType("decimal(18,2)");
+        modelBuilder.Entity<PatientDocument>()
+            .HasOne(document => document.Patient)
+            .WithMany(patient => patient.Documents)
+            .HasForeignKey(document => document.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
         
         modelBuilder.Entity<Doctor>().HasData(
             new Doctor { DoctorId = 1, FirstName = "Adam", LastName = "Wiśniewski", PESEL = "75081911223", BirthDate = new DateOnly(1975, 8, 19), PwzNumber = "1234567", Specialization = "Kardiolog" },

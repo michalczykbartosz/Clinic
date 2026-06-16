@@ -43,6 +43,7 @@ try
     builder.Services.AddScoped<MedicationMapper>();
     builder.Services.AddScoped<ClinicalNoteMapper>();
     builder.Services.AddScoped<PrescriptionItemMapper>();
+    builder.Services.AddScoped<PatientDocumentMapper>();
 
     // Business services
     builder.Services.AddScoped<IPatientService, PatientService>();
@@ -55,6 +56,7 @@ try
     builder.Services.AddScoped<IProcedureService, ProcedureService>();
     builder.Services.AddScoped<IReportService, ReportService>();
     builder.Services.AddScoped<IVisitMedicationService, VisitMedicationService>();
+    builder.Services.AddScoped<IPatientDocumentService, PatientDocumentService>();
 
     //BackgroundServices
     builder.Services.AddHostedService<NextDayReportAutomationService>();

@@ -11,15 +11,18 @@ public class PatientsController : Controller
 {
     private readonly IPatientService _patientService;
     private readonly IVisitService _visitService;
+    private readonly IPatientDocumentService _documentService;
     private readonly ILogger<PatientsController> _logger;
 
     public PatientsController(
         IPatientService patientService,
         IVisitService visitService,
+        IPatientDocumentService documentService,
         ILogger<PatientsController> logger)
     {
         _patientService = patientService;
         _visitService = visitService;
+        _documentService = documentService;
         _logger = logger;
     }
 
@@ -44,11 +47,13 @@ public class PatientsController : Controller
         }
 
         var visits = await _visitService.GetByPatientIdAsync(id, cancellationToken);
+        var documents = await _documentService.GetByPatientIdAsync(id, cancellationToken);
 
         var model = new PatientDetailsViewModel
         {
             Patient = patient,
-            Visits = visits
+            Visits = visits,
+            Documents = documents
         };
 
         return View(model);

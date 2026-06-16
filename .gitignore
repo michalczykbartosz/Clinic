@@ -6,6 +6,10 @@
 # dotenv files
 .env
 
+# Uploaded patient documents
+ClinicManager/wwwroot/uploads/patient-documents/*
+!ClinicManager/wwwroot/uploads/patient-documents/.gitkeep
+
 # User-specific files
 *.rsuser
 *.suo

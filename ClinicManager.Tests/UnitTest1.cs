@@ -48,6 +48,21 @@ public class PatientDetailsTests
         var controller = new PatientsController(
             patientService,
             visitService,
+            new StubPatientDocumentService
+            {
+                Documents =
+                [
+                    new PatientDocumentDto
+                    {
+                        PatientDocumentId = 4,
+                        PatientId = 1,
+                        OriginalFileName = "skierowanie.pdf",
+                        ContentType = "application/pdf",
+                        FileSize = 1024,
+                        UploadedAt = new DateTime(2026, 6, 16, 9, 0, 0)
+                    }
+                ]
+            },
             NullLogger<PatientsController>.Instance);
 
         var result = await controller.Details(1, CancellationToken.None);
@@ -60,6 +75,8 @@ public class PatientDetailsTests
         Assert.That(model!.Patient.PatientId, Is.EqualTo(1));
         Assert.That(model.Visits, Has.Count.EqualTo(1));
         Assert.That(model.Visits[0].DoctorFullName, Is.EqualTo("Adam Wiśniewski"));
+        Assert.That(model.Documents, Has.Count.EqualTo(1));
+        Assert.That(model.Documents[0].OriginalFileName, Is.EqualTo("skierowanie.pdf"));
     }
 
     [Test]
@@ -68,6 +85,7 @@ public class PatientDetailsTests
         var controller = new PatientsController(
             new StubPatientService(),
             new StubVisitService(),
+            new StubPatientDocumentService(),
             NullLogger<PatientsController>.Instance);
 
         var result = await controller.Details(999, CancellationToken.None);
@@ -148,6 +166,62 @@ public class PatientDetailsTests
         {
             throw new NotImplementedException();
         }
+    }
+
+    private sealed class StubPatientDocumentService : IPatientDocumentService
+    {
+        public IReadOnlyList<PatientDocumentDto> Documents { get; set; } = Array.Empty<PatientDocumentDto>();
+
+        public Task<IReadOnlyList<PatientDocumentDto>> GetByPatientIdAsync(
+            int patientId,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(Documents);
+        }
+
+        public Task<PatientDocumentDto?> UploadAsync(
+            UploadPatientDocumentDto dto,
+            CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<PatientDocumentFileDto?> GetFileAsync(
+            int documentId,
+            CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<int?> DeleteAsync(int documentId, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}
+
+public class PatientDocumentDtoTests
+{
+    [Test]
+    public void UploadPatientDocumentDto_WhenFileIsMissing_FailsValidation()
+    {
+        var dto = new UploadPatientDocumentDto
+        {
+            PatientId = 1,
+            File = null
+        };
+        var validationResults = new List<ValidationResult>();
+
+        var isValid = Validator.TryValidateObject(
+            dto,
+            new ValidationContext(dto),
+            validationResults,
+            validateAllProperties: true);
+
+        var invalidMembers = validationResults.SelectMany(result => result.MemberNames);
+
+        Assert.That(isValid, Is.False);
+        Assert.That(invalidMembers, Does.Contain(nameof(UploadPatientDocumentDto.File)));
     }
 }
 
