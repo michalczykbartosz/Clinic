@@ -6,4 +6,5 @@ public class PatientDetailsViewModel
 {
     public PatientDto Patient { get; set; } = new();
     public IReadOnlyList<PatientVisitDto> Visits { get; set; } = Array.Empty<PatientVisitDto>();
+    public IReadOnlyList<PatientDocumentDto> Documents { get; set; } = Array.Empty<PatientDocumentDto>();
 }

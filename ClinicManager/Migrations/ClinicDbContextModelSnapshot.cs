@@ -208,6 +208,50 @@ namespace ClinicManager.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ClinicManager.Models.PatientDocument", b =>
+                {
+                    b.Property<int>("PatientDocumentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PatientDocumentId"));
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("PatientId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RelativePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("StoredFileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("PatientDocumentId");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("PatientDocuments");
+                });
+
             modelBuilder.Entity("ClinicManager.Models.Prescription", b =>
                 {
                     b.Property<int>("PrescriptionId")
@@ -577,6 +621,17 @@ namespace ClinicManager.Migrations
                     b.Navigation("Patient");
                 });
 
+            modelBuilder.Entity("ClinicManager.Models.PatientDocument", b =>
+                {
+                    b.HasOne("ClinicManager.Models.Patient", "Patient")
+                        .WithMany("Documents")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
+                });
+
             modelBuilder.Entity("ClinicManager.Models.Prescription", b =>
                 {
                     b.HasOne("ClinicManager.Models.Visit", "Visit")
@@ -714,6 +769,8 @@ namespace ClinicManager.Migrations
 
             modelBuilder.Entity("ClinicManager.Models.Patient", b =>
                 {
+                    b.Navigation("Documents");
+
                     b.Navigation("VisitList");
                 });
 

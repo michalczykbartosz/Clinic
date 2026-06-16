@@ -13,4 +13,5 @@ public class Patient
     public string InsuranceNumber { get; set; }
     public DateOnly BirthDate { get; set; }
     public List<Visit> VisitList { get; set; }
+    public List<PatientDocument> Documents { get; set; } = [];
 }
