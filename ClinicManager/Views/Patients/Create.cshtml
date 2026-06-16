@@ -4,16 +4,42 @@
     ViewData["Title"] = "Dodaj pacjenta";
 }
 
-<h1 class="h3 mb-3">Dodaj pacjenta</h1>
-
-<form asp-action="Create" method="post" class="row g-3">
-    <partial name="_PatientForm" model="Model" />
-
-    <div class="col-12 d-flex gap-2">
-        <button type="submit" class="btn btn-primary">Zapisz</button>
-        <a class="btn btn-outline-secondary" asp-action="Index">Anuluj</a>
+<div class="form-wrapper">
+    <div class="page-header">
+        <div class="page-header__left">
+            <div class="page-header__icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                    <line x1="19" y1="8" x2="19" y2="14"/>
+                    <line x1="16" y1="11" x2="22" y2="11"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="page-header__title">Dodaj pacjenta</h1>
+                <p class="page-header__sub">Uzupełnij podstawowe dane pacjenta</p>
+            </div>
+        </div>
+        <a asp-action="Index" class="btn btn-secondary">Powrót</a>
     </div>
-</form>
+
+    <div class="form-card">
+        <form asp-action="Create" method="post">
+            <div class="form-section">
+                <h2 class="form-section__title"><span class="form-section__number">01</span>Dane pacjenta</h2>
+                <partial name="_PatientForm" model="Model" />
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Zapisz pacjenta</button>
+                <a class="btn btn-secondary" asp-action="Index">Anuluj</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<partial name="_PatientFormStyles" />
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

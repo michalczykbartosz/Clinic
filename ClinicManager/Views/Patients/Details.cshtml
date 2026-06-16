@@ -23,99 +23,186 @@
     {
         return status switch
         {
-            VisitState.Planned => "bg-primary",
-            VisitState.InProgress => "bg-warning text-dark",
-            VisitState.Finished => "bg-success",
-            VisitState.Canceled => "bg-secondary",
-            _ => "bg-light text-dark"
+            VisitState.Planned => "status-badge--planned",
+            VisitState.InProgress => "status-badge--progress",
+            VisitState.Finished => "status-badge--finished",
+            VisitState.Canceled => "status-badge--canceled",
+            _ => "status-badge--default"
         };
     }
 }
 
-<div class="d-flex align-items-center justify-content-between mb-3">
-    <h1 class="h3 mb-0">Szczegóły pacjenta</h1>
-    <div class="d-flex gap-2">
-        <a class="btn btn-outline-secondary" asp-action="Index">Powrót</a>
-        @if (canManagePatients)
-        {
-            <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Patient.PatientId">Edytuj</a>
-        }
-    </div>
-</div>
-
-@if (TempData["SuccessMessage"] is string successMessage)
-{
-    <div class="alert alert-success" role="alert">@successMessage</div>
-}
-
-<dl class="row">
-    <dt class="col-sm-3">Imię</dt>
-    <dd class="col-sm-9">@Model.Patient.FirstName</dd>
-
-    <dt class="col-sm-3">Nazwisko</dt>
-    <dd class="col-sm-9">@Model.Patient.LastName</dd>
-
-    <dt class="col-sm-3">PESEL</dt>
-    <dd class="col-sm-9">@Model.Patient.PESEL</dd>
-
-    <dt class="col-sm-3">Numer ubezpieczenia</dt>
-    <dd class="col-sm-9">@Model.Patient.InsuranceNumber</dd>
-
-    <dt class="col-sm-3">Data urodzenia</dt>
-    <dd class="col-sm-9">@Model.Patient.BirthDate.ToString("dd.MM.yyyy")</dd>
-</dl>
-
-<div class="d-flex align-items-center justify-content-between mt-4 mb-3">
-    <h2 class="h4 mb-0">Wizyty pacjenta</h2>
-</div>
-
-@if (Model.Visits.Count == 0)
-{
-    <div class="alert alert-info" role="alert">Pacjent nie ma jeszcze zarejestrowanych wizyt.</div>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-striped align-middle">
-            <thead>
-                <tr>
-                    <th>Numer wizyty</th>
-                    <th>Data i godzina</th>
-                    <th>Status</th>
-                    <th>Lekarz</th>
-                    <th>Specjalizacja</th>
-                    <th class="text-end">Procedury</th>
-                </tr>
-            </thead>
-            <tbody>
-            @foreach (var visit in Model.Visits)
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="page-header__left">
+            <div class="page-header__icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="page-header__title">@Model.Patient.FirstName @Model.Patient.LastName</h1>
+                <p class="page-header__sub">Szczegóły pacjenta i historia wizyt</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <a class="btn btn-secondary" asp-action="Index">Powrót</a>
+            @if (canManagePatients)
             {
-                <tr>
-                    <td>@visit.VisitId</td>
-                    <td>@visit.VisitDateTime.ToString("dd.MM.yyyy HH:mm")</td>
-                    <td>
-                        <span class="badge @GetVisitStatusBadgeClass(visit.VisitStatus)">
-                            @GetVisitStatusLabel(visit.VisitStatus)
-                        </span>
-                    </td>
-                    <td>@visit.DoctorFullName</td>
-                    <td>@visit.DoctorSpecialization</td>
-                    <td class="text-end">
-                        <a class="btn btn-sm btn-outline-secondary"
-                           asp-controller="Procedures"
-                           asp-action="Index"
-                           asp-route-visitId="@visit.VisitId">
-                            Procedury
-                        </a>
-                    </td>
-                </tr>
+                <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Patient.PatientId">Edytuj</a>
             }
-            </tbody>
-        </table>
+        </div>
     </div>
-}
 
-@if (canManagePatients)
-{
-    <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Patient.PatientId">Usuń pacjenta</a>
-}
+    @if (TempData["SuccessMessage"] is string successMessage)
+    {
+        <div class="alert alert-success" role="alert">@successMessage</div>
+    }
+
+    <div class="details-card">
+        <div class="details-grid">
+            <div class="detail-item">
+                <span class="detail-label">Imię</span>
+                <strong>@Model.Patient.FirstName</strong>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Nazwisko</span>
+                <strong>@Model.Patient.LastName</strong>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">PESEL</span>
+                <strong>@Model.Patient.PESEL</strong>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Numer ubezpieczenia</span>
+                <strong>@Model.Patient.InsuranceNumber</strong>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Data urodzenia</span>
+                <strong>@Model.Patient.BirthDate.ToString("dd.MM.yyyy")</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-header">
+        <h2>Wizyty pacjenta</h2>
+        <span>@Model.Visits.Count wpisów</span>
+    </div>
+
+    @if (Model.Visits.Count == 0)
+    {
+        <div class="empty-state">
+            <p>Pacjent nie ma jeszcze zarejestrowanych wizyt.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-card">
+            <div class="table-scroll">
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th>Numer</th>
+                        <th>Data i godzina</th>
+                        <th>Status</th>
+                        <th>Lekarz</th>
+                        <th>Specjalizacja</th>
+                        <th class="th-action">Procedury</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var visit in Model.Visits)
+                    {
+                        <tr>
+                            <td><span class="id-chip">#@visit.VisitId</span></td>
+                            <td class="cell--date">@visit.VisitDateTime.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>
+                                <span class="status-badge @GetVisitStatusBadgeClass(visit.VisitStatus)">
+                                    @GetVisitStatusLabel(visit.VisitStatus)
+                                </span>
+                            </td>
+                            <td>@visit.DoctorFullName</td>
+                            <td class="cell--muted">@visit.DoctorSpecialization</td>
+                            <td class="td-action">
+                                <a class="btn-mini btn-mini--secondary"
+                                   asp-controller="Procedures"
+                                   asp-action="Index"
+                                   asp-route-visitId="@visit.VisitId">
+                                    Procedury
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    @if (canManagePatients)
+    {
+        <div class="danger-actions">
+            <a class="btn-mini btn-mini--danger" asp-action="Delete" asp-route-id="@Model.Patient.PatientId">Usuń pacjenta</a>
+        </div>
+    }
+</div>
+
+<style>
+    *, *::before, *::after { box-sizing: border-box; }
+    .page-wrapper { max-width: 1080px; margin: 2.5rem auto; padding: 0 1rem; font-family: 'Inter', system-ui, -apple-system, sans-serif; color: #1E293B; }
+    .page-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .page-header__left, .header-actions { display: flex; align-items: center; gap: 1rem; }
+    .header-actions { gap: .6rem; }
+    .page-header__icon { width: 48px; height: 48px; background: #EFF6FF; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #2563EB; flex-shrink: 0; }
+    .page-header__icon svg { width: 22px; height: 22px; }
+    .page-header__title { font-size: 1.5rem; font-weight: 700; color: #0F172A; margin: 0 0 .15rem; letter-spacing: -.02em; }
+    .page-header__sub { font-size: .82rem; color: #94A3B8; margin: 0; }
+    .alert { padding: .8rem 1.1rem; border-radius: 10px; font-size: .875rem; margin-bottom: 1.25rem; }
+    .alert-success { background: #F0FDF4; border: 1px solid #BBF7D0; color: #166534; }
+    .details-card, .table-card { background: #fff; border: 1px solid #E2E8F0; border-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+    .details-card { padding: 1.25rem; margin-bottom: 1.75rem; }
+    .details-grid { display: grid; grid-template-columns: repeat(5, minmax(130px, 1fr)); gap: .75rem; }
+    .detail-item { background: #F8FAFC; border: 1px solid #EEF2F7; border-radius: 10px; padding: .85rem; }
+    .detail-label { display: block; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94A3B8; margin-bottom: .35rem; }
+    .detail-item strong { color: #0F172A; font-size: .92rem; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: .9rem; }
+    .section-header h2 { font-size: 1rem; font-weight: 700; color: #0F172A; margin: 0; }
+    .section-header span { font-size: .78rem; color: #94A3B8; }
+    .empty-state { padding: 2.5rem 2rem; background: #fff; border: 1px dashed #D1D5DB; border-radius: 14px; color: #94A3B8; text-align: center; }
+    .empty-state p { margin: 0; }
+    .table-card { overflow: hidden; }
+    .table-scroll { overflow-x: auto; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    .data-table thead tr { background: #F8FAFC; }
+    .data-table th { padding: .75rem 1.1rem; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #64748B; text-align: left; border-bottom: 1px solid #E2E8F0; white-space: nowrap; }
+    .data-table td { padding: .85rem 1.1rem; border-bottom: 1px solid #F1F5F9; vertical-align: middle; white-space: nowrap; }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover { background: #FAFBFF; }
+    .th-action, .td-action { text-align: right; }
+    .id-chip { display: inline-block; font-size: .74rem; font-weight: 600; color: #64748B; background: #F1F5F9; border-radius: 6px; padding: .2rem .55rem; font-variant-numeric: tabular-nums; }
+    .cell--date { font-variant-numeric: tabular-nums; color: #475569; }
+    .cell--muted { color: #94A3B8; }
+    .status-badge { display: inline-block; font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; border-radius: 20px; padding: .25rem .7rem; white-space: nowrap; }
+    .status-badge--planned { background: #DBEAFE; color: #1D4ED8; }
+    .status-badge--progress { background: #FEF3C7; color: #92400E; }
+    .status-badge--finished { background: #D1FAE5; color: #065F46; }
+    .status-badge--canceled, .status-badge--default { background: #F1F5F9; color: #64748B; }
+    .danger-actions { display: flex; justify-content: flex-end; margin-top: 1rem; }
+    .btn, .btn-mini { display: inline-flex; align-items: center; justify-content: center; gap: .45rem; font-weight: 600; border: 1.5px solid transparent; cursor: pointer; text-decoration: none; transition: all .18s; font-family: inherit; white-space: nowrap; }
+    .btn { padding: .6rem 1.3rem; font-size: .875rem; border-radius: 9px; }
+    .btn-mini { padding: .4rem .8rem; font-size: .78rem; border-radius: 7px; }
+    .btn-primary { background: #2563EB; color: #fff; border-color: #2563EB; }
+    .btn-primary:hover { background: #1D4ED8; border-color: #1D4ED8; box-shadow: 0 4px 12px rgba(37,99,235,.3); transform: translateY(-1px); }
+    .btn-secondary, .btn-mini--secondary { background: #fff; color: #475569; border-color: #D1D5DB; }
+    .btn-secondary:hover, .btn-mini--secondary:hover { background: #F8FAFC; border-color: #94A3B8; }
+    .btn-mini--danger { background: #FEF2F2; color: #DC2626; border-color: #FECACA; }
+    .btn-mini--danger:hover { background: #DC2626; color: #fff; border-color: #DC2626; }
+    @@media (max-width: 820px) { .details-grid { grid-template-columns: repeat(2, 1fr); } }
+    @@media (max-width: 560px) {
+        .details-grid { grid-template-columns: 1fr; }
+        .header-actions { width: 100%; }
+        .header-actions .btn { flex: 1; }
+    }
+</style>

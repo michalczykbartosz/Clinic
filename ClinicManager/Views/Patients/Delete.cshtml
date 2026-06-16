@@ -4,30 +4,74 @@
     ViewData["Title"] = "Usuń pacjenta";
 }
 
-<h1 class="h3 mb-3">Usuń pacjenta</h1>
+<div class="form-wrapper">
+    <div class="page-header">
+        <div class="page-header__left">
+            <div class="page-header__icon page-header__icon--danger">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                    <path d="M10 11v6"/>
+                    <path d="M14 11v6"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="page-header__title">Usuń pacjenta</h1>
+                <p class="page-header__sub">Ta operacja wymaga potwierdzenia</p>
+            </div>
+        </div>
+        <a class="btn btn-secondary" asp-action="Index">Powrót</a>
+    </div>
 
-<div class="alert alert-warning" role="alert">
-    Czy na pewno chcesz usunąć pacjenta @Model.FirstName @Model.LastName?
+    <div class="form-card">
+        <div class="warning-box">
+            Czy na pewno chcesz usunąć pacjenta <strong>@Model.FirstName @Model.LastName</strong>?
+        </div>
+
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+        <div class="summary-grid">
+            <div><span>PESEL</span><strong>@Model.PESEL</strong></div>
+            <div><span>Numer ubezpieczenia</span><strong>@Model.InsuranceNumber</strong></div>
+        </div>
+
+        <form asp-action="Delete" method="post" class="form-actions">
+            <input type="hidden" name="id" value="@Model.PatientId" />
+            <button type="submit" class="btn btn-danger">Usuń</button>
+            <a class="btn btn-secondary" asp-action="Index">Anuluj</a>
+        </form>
+    </div>
 </div>
 
-<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
-<dl class="row">
-    <dt class="col-sm-3">Imię</dt>
-    <dd class="col-sm-9">@Model.FirstName</dd>
-
-    <dt class="col-sm-3">Nazwisko</dt>
-    <dd class="col-sm-9">@Model.LastName</dd>
-
-    <dt class="col-sm-3">PESEL</dt>
-    <dd class="col-sm-9">@Model.PESEL</dd>
-
-    <dt class="col-sm-3">Numer ubezpieczenia</dt>
-    <dd class="col-sm-9">@Model.InsuranceNumber</dd>
-</dl>
-
-<form asp-action="Delete" method="post" class="d-flex gap-2">
-    <input type="hidden" name="id" value="@Model.PatientId" />
-    <button type="submit" class="btn btn-danger">Usuń</button>
-    <a class="btn btn-outline-secondary" asp-action="Index">Anuluj</a>
-</form>
+<style>
+    *, *::before, *::after { box-sizing: border-box; }
+    .form-wrapper { max-width: 640px; margin: 2.5rem auto; padding: 0 1rem; font-family: 'Inter', system-ui, -apple-system, sans-serif; color: #1E293B; }
+    .page-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.75rem; flex-wrap: wrap; }
+    .page-header__left { display: flex; align-items: center; gap: 1rem; }
+    .page-header__icon { width: 48px; height: 48px; background: #EFF6FF; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #2563EB; flex-shrink: 0; }
+    .page-header__icon--danger { background: #FEF2F2; color: #DC2626; }
+    .page-header__icon svg { width: 23px; height: 23px; }
+    .page-header__title { font-size: 1.5rem; font-weight: 700; color: #0F172A; margin: 0 0 .15rem; letter-spacing: -.02em; }
+    .page-header__sub { font-size: .85rem; color: #64748B; margin: 0; }
+    .form-card { background: #fff; border: 1px solid #E2E8F0; border-radius: 16px; padding: 2rem 2.25rem; box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04); }
+    .warning-box { background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: 10px; padding: .95rem 1rem; font-size: .9rem; margin-bottom: 1rem; }
+    .alert { padding: .85rem 1rem; border-radius: 9px; font-size: .875rem; margin-bottom: 1rem; }
+    .alert-danger { background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; }
+    .alert:empty { display: none; }
+    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-bottom: 1.5rem; }
+    .summary-grid div { background: #F8FAFC; border: 1px solid #EEF2F7; border-radius: 10px; padding: .85rem; }
+    .summary-grid span { display: block; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94A3B8; margin-bottom: .35rem; }
+    .summary-grid strong { color: #0F172A; font-size: .92rem; }
+    .form-actions { display: flex; align-items: center; gap: .75rem; padding-top: 1.5rem; border-top: 1px solid #F1F5F9; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; padding: .65rem 1.5rem; font-size: .875rem; font-weight: 600; border-radius: 9px; border: 1.5px solid transparent; cursor: pointer; text-decoration: none; transition: all .18s; font-family: inherit; white-space: nowrap; }
+    .btn-secondary { background: #fff; color: #475569; border-color: #D1D5DB; }
+    .btn-secondary:hover { background: #F8FAFC; border-color: #94A3B8; }
+    .btn-danger { background: #DC2626; color: #fff; border-color: #DC2626; }
+    .btn-danger:hover { background: #B91C1C; border-color: #B91C1C; box-shadow: 0 4px 12px rgba(220,38,38,.25); transform: translateY(-1px); }
+    @@media (max-width: 560px) {
+        .summary-grid { grid-template-columns: 1fr; }
+        .form-card { padding: 1.5rem 1.25rem; }
+        .form-actions { align-items: stretch; flex-direction: column; }
+    }
+</style>

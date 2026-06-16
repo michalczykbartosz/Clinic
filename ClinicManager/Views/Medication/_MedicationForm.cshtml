@@ -1,0 +1,29 @@
+@model ClinicManager.DTOs.MedicationDto
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+<div class="form-section">
+    <h2 class="form-section__title"><span class="form-section__number">01</span>Dane leku</h2>
+
+    <div class="form-grid">
+        <div class="form-group">
+            <label asp-for="Name" class="form-label">Nazwa leku</label>
+            <input asp-for="Name" class="form-control" placeholder="np. Paracetamol" />
+            <span asp-validation-for="Name" class="field-error"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Dose" class="form-label">Dawka</label>
+            <input asp-for="Dose" class="form-control" placeholder="np. 500 mg" />
+            <span asp-validation-for="Dose" class="field-error"></span>
+        </div>
+    </div>
+
+    <div class="form-grid form-grid--single">
+        <div class="form-group">
+            <label asp-for="Manufacturer" class="form-label">Producent</label>
+            <input asp-for="Manufacturer" class="form-control" placeholder="np. Polpharma" />
+            <span asp-validation-for="Manufacturer" class="field-error"></span>
+        </div>
+    </div>
+</div>

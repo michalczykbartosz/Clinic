@@ -36,113 +36,504 @@
     {
         return status switch
         {
-            VisitState.Planned => "bg-primary",
-            VisitState.InProgress => "bg-warning text-dark",
-            VisitState.Finished => "bg-success",
-            VisitState.Canceled => "bg-secondary",
-            _ => "bg-light text-dark"
+            VisitState.Planned => "status-badge--planned",
+            VisitState.InProgress => "status-badge--progress",
+            VisitState.Finished => "status-badge--finished",
+            VisitState.Canceled => "status-badge--canceled",
+            _ => "status-badge--default"
         };
     }
 }
 
-<div class="d-flex align-items-center justify-content-between mb-3">
-    <h1 class="h3 mb-0">Wizyty</h1>
-    @if (canCreateVisit)
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="page-header__left">
+            <div class="page-header__icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="page-header__title">Wizyty</h1>
+                <p class="page-header__sub">@Model.Count wizyt w systemie</p>
+            </div>
+        </div>
+        @if (canCreateVisit)
+        {
+            <a class="btn btn-primary" asp-action="Create">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2.5"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Dodaj wizytę
+            </a>
+        }
+    </div>
+
+    @if (TempData["SuccessMessage"] is string successMessage)
     {
-        <a class="btn btn-primary" asp-action="Create">Dodaj wizytę</a>
+        <div class="alert alert-success">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            @successMessage
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] is string errorMessage)
+    {
+        <div class="alert alert-danger">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            @errorMessage
+        </div>
+    }
+
+    @if (Model.Count == 0)
+    {
+        <div class="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <p>Brak wizyt w systemie.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-card">
+            <table class="data-table visits-table">
+                <thead>
+                    <tr>
+                        <th>Numer</th>
+                        <th>Data</th>
+                        <th>Status</th>
+                        <th>Pacjent</th>
+                        <th>Lekarz</th>
+                        @if (canUpdateVisitStatus)
+                        {
+                            <th class="th-action">Obsługa</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var visit in Model)
+                {
+                    <tr>
+                        <td data-label="Numer"><span class="id-chip">#@visit.VisitId</span></td>
+                        <td data-label="Data" class="cell--date">@visit.VisitDateTime.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td data-label="Status">
+                            <span class="status-badge @GetVisitStatusBadgeClass(visit.VisitStatus)">
+                                @GetVisitStatusLabel(visit.VisitStatus)
+                            </span>
+                        </td>
+                        <td data-label="Pacjent">
+                            <a asp-controller="Patients" asp-action="Details" asp-route-id="@visit.PatientId" class="name-link">
+                                @visit.PatientFullName
+                            </a>
+                            <span class="cell-note">PESEL: @visit.PatientPESEL</span>
+                        </td>
+                        <td data-label="Lekarz">
+                            <span class="cell-main">@visit.DoctorFullName</span>
+                            <span class="cell-note">@visit.DoctorSpecialization</span>
+                        </td>
+                        @if (canUpdateVisitStatus)
+                        {
+                            <td data-label="Obsługa" class="td-action">
+                                <form asp-action="UpdateStatus"
+                                      asp-route-id="@visit.VisitId"
+                                      method="post"
+                                      class="status-form">
+                                    <select name="VisitStatus"
+                                            class="status-select"
+                                            aria-label="Status wizyty @visit.VisitId">
+                                        @foreach (var option in GetVisitStatusOptions())
+                                        {
+                                            if (option.Status == visit.VisitStatus)
+                                            {
+                                                <option value="@option.Status" selected>@option.Label</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@option.Status">@option.Label</option>
+                                            }
+                                        }
+                                    </select>
+                                    <button type="submit" class="btn-mini btn-mini--primary">Zapisz</button>
+                                    @if (canManageClinicalNotes)
+                                    {
+                                        <a class="btn-mini btn-mini--secondary"
+                                           asp-controller="ClinicalNote"
+                                           asp-action="GetNote"
+                                           asp-route-visitId="@visit.VisitId">
+                                            @(visit.HasClinicalNote ? "Edytuj notatkę" : "Dodaj notatkę")
+                                        </a>
+                                    }
+                                </form>
+                            </td>
+                        }
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
     }
 </div>
 
-@if (TempData["SuccessMessage"] is string successMessage)
-{
-    <div class="alert alert-success" role="alert">@successMessage</div>
-}
+<style>
+    *, *::before, *::after { box-sizing: border-box; }
 
-@if (TempData["ErrorMessage"] is string errorMessage)
-{
-    <div class="alert alert-danger" role="alert">@errorMessage</div>
-}
+    .page-wrapper {
+        max-width: 1120px;
+        margin: 2.5rem auto;
+        padding: 0 1rem;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        color: #1E293B;
+    }
 
-@if (Model.Count == 0)
-{
-    <div class="alert alert-info" role="alert">Brak wizyt w systemie.</div>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-striped align-middle">
-            <thead>
-                <tr>
-                    <th>Numer wizyty</th>
-                    <th>Data i godzina</th>
-                    <th>Status</th>
-                    <th>Pacjent</th>
-                    <th>PESEL</th>
-                    <th>Lekarz</th>
-                    <th>Specjalizacja</th>
-                    @if (canUpdateVisitStatus)
-                    {
-                        <th class="text-end">Zmień status</th>
-                    }
-                </tr>
-            </thead>
-            <tbody>
-            @foreach (var visit in Model)
-            {
-                <tr>
-                    <td>@visit.VisitId</td>
-                    <td>@visit.VisitDateTime.ToString("dd.MM.yyyy HH:mm")</td>
-                    <td>
-                        <span class="badge @GetVisitStatusBadgeClass(visit.VisitStatus)">
-                            @GetVisitStatusLabel(visit.VisitStatus)
-                        </span>
-                    </td>
-                    <td>
-                        <a asp-controller="Patients" asp-action="Details" asp-route-id="@visit.PatientId">
-                            @visit.PatientFullName
-                        </a>
-                    </td>
-                    <td>@visit.PatientPESEL</td>
-                    <td>@visit.DoctorFullName</td>
-                    <td>@visit.DoctorSpecialization</td>
-                    @if (canUpdateVisitStatus)
-                    {
-                        <td>
-                            <form asp-action="UpdateStatus"
-                                  asp-route-id="@visit.VisitId"
-                                  method="post"
-                                  class="d-flex justify-content-end gap-2">
-                                <select name="VisitStatus"
-                                        class="form-select form-select-sm w-auto"
-                                        aria-label="Status wizyty @visit.VisitId">
-                                    @foreach (var option in GetVisitStatusOptions())
-                                    {
-                                        if (option.Status == visit.VisitStatus)
-                                        {
-                                            <option value="@option.Status" selected>@option.Label</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="@option.Status">@option.Label</option>
-                                        }
-                                    }
-                                </select>
-                                <button type="submit" class="btn btn-sm btn-outline-primary">Zapisz</button>
-                                @if (canManageClinicalNotes)
-                                {
-                                    <a class="btn btn-sm btn-outline-secondary"
-                                       asp-controller="ClinicalNote"
-                                       asp-action="GetNote"
-                                       asp-route-visitId="@visit.VisitId">
-                                        @(visit.HasClinicalNote ? "Edytuj notatkę kliniczną" : "Dodaj notatkę kliniczną")
-                                    </a>
-                                }
-                            </form>
-                        </td>
-                    }
-                </tr>
-            }
-            </tbody>
-        </table>
-    </div>
-}
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .page-header__left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .page-header__icon {
+        width: 48px;
+        height: 48px;
+        background: #EFF6FF;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #2563EB;
+        flex-shrink: 0;
+    }
+
+    .page-header__icon svg { width: 22px; height: 22px; }
+
+    .page-header__title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #0F172A;
+        margin: 0 0 .15rem;
+        letter-spacing: -.02em;
+    }
+
+    .page-header__sub {
+        font-size: .82rem;
+        color: #94A3B8;
+        margin: 0;
+    }
+
+    .alert {
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+        padding: .8rem 1.1rem;
+        border-radius: 10px;
+        font-size: .875rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .alert svg { flex-shrink: 0; }
+    .alert-success { background: #F0FDF4; border: 1px solid #BBF7D0; color: #166534; }
+    .alert-danger { background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; }
+
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: .75rem;
+        padding: 3.5rem 2rem;
+        background: #fff;
+        border: 1px dashed #D1D5DB;
+        border-radius: 14px;
+        color: #94A3B8;
+        text-align: center;
+    }
+
+    .empty-state svg { width: 42px; height: 42px; }
+    .empty-state p { font-size: .9rem; margin: 0; }
+
+    .table-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: .82rem;
+        table-layout: fixed;
+    }
+
+    .data-table thead tr { background: #F8FAFC; }
+
+    .data-table th {
+        padding: .72rem .8rem;
+        font-size: .68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: #64748B;
+        text-align: left;
+        border-bottom: 1px solid #E2E8F0;
+    }
+
+    .visits-table th:nth-child(1) { width: 72px; }
+    .visits-table th:nth-child(2) { width: 132px; }
+    .visits-table th:nth-child(3) { width: 126px; }
+    .visits-table th:nth-child(4) { width: 22%; }
+    .visits-table th:nth-child(5) { width: 22%; }
+    .visits-table th:nth-child(6) { width: 270px; }
+
+    .th-action { text-align: right; }
+
+    .data-table td {
+        padding: .8rem .8rem;
+        border-bottom: 1px solid #F1F5F9;
+        vertical-align: middle;
+        white-space: normal;
+    }
+
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover { background: #FAFBFF; }
+
+    .id-chip {
+        display: inline-block;
+        font-size: .74rem;
+        font-weight: 600;
+        color: #64748B;
+        background: #F1F5F9;
+        border-radius: 6px;
+        padding: .2rem .55rem;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .cell--date {
+        font-variant-numeric: tabular-nums;
+        color: #475569;
+    }
+
+    .cell-main,
+    .cell-note {
+        display: block;
+        overflow-wrap: anywhere;
+        line-height: 1.35;
+    }
+
+    .cell-main { color: #1E293B; font-weight: 500; }
+
+    .cell-note {
+        color: #94A3B8;
+        font-size: .76rem;
+        margin-top: .15rem;
+    }
+
+    .name-link {
+        color: #2563EB;
+        display: inline-block;
+        font-weight: 600;
+        overflow-wrap: anywhere;
+        text-decoration: none;
+    }
+
+    .name-link:hover { text-decoration: underline; }
+
+    .status-badge {
+        display: inline-block;
+        font-size: .68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        border-radius: 20px;
+        padding: .25rem .62rem;
+        white-space: nowrap;
+    }
+
+    .status-badge--planned   { background: #DBEAFE; color: #1D4ED8; }
+    .status-badge--progress  { background: #FEF3C7; color: #92400E; }
+    .status-badge--finished  { background: #D1FAE5; color: #065F46; }
+    .status-badge--canceled  { background: #F1F5F9; color: #64748B; }
+    .status-badge--default   { background: #F1F5F9; color: #64748B; }
+
+    .td-action { text-align: right; }
+
+    .status-form {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: .45rem;
+        flex-wrap: wrap;
+    }
+
+    .status-select {
+        width: 132px;
+        font-size: .78rem;
+        padding: .38rem .55rem;
+        border: 1.5px solid #D1D5DB;
+        border-radius: 7px;
+        background: #FAFAFA;
+        color: #1E293B;
+        outline: none;
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right .5rem center;
+        background-size: 14px;
+        padding-right: 1.65rem;
+        transition: border-color .15s;
+    }
+
+    .status-select:focus {
+        border-color: #3B82F6;
+        background-color: #fff;
+    }
+
+    .btn-mini {
+        display: inline-flex;
+        align-items: center;
+        padding: .38rem .68rem;
+        font-size: .76rem;
+        font-weight: 600;
+        border-radius: 7px;
+        border: 1.5px solid transparent;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .15s;
+        font-family: inherit;
+        white-space: nowrap;
+    }
+
+    .btn-mini--primary {
+        background: #EFF6FF;
+        color: #2563EB;
+        border-color: #BFDBFE;
+    }
+
+    .btn-mini--primary:hover {
+        background: #2563EB;
+        color: #fff;
+        border-color: #2563EB;
+    }
+
+    .btn-mini--secondary {
+        background: #fff;
+        color: #475569;
+        border-color: #D1D5DB;
+    }
+
+    .btn-mini--secondary:hover {
+        background: #F8FAFC;
+        border-color: #94A3B8;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .6rem 1.3rem;
+        font-size: .875rem;
+        font-weight: 600;
+        border-radius: 9px;
+        border: 1.5px solid transparent;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .18s;
+        font-family: inherit;
+    }
+
+    .btn-primary {
+        background: #2563EB;
+        color: #fff;
+        border-color: #2563EB;
+    }
+
+    .btn-primary:hover {
+        background: #1D4ED8;
+        border-color: #1D4ED8;
+        box-shadow: 0 4px 12px rgba(37,99,235,.3);
+        transform: translateY(-1px);
+    }
+
+    @@media (max-width: 700px) {
+        .table-card {
+            background: transparent;
+            border: 0;
+            box-shadow: none;
+            overflow: visible;
+        }
+
+        .data-table,
+        .data-table thead,
+        .data-table tbody,
+        .data-table tr,
+        .data-table th,
+        .data-table td {
+            display: block;
+            width: 100%;
+        }
+
+        .data-table thead { display: none; }
+
+        .data-table tr {
+            background: #fff;
+            border: 1px solid #E2E8F0;
+            border-radius: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.05);
+            margin-bottom: .8rem;
+            overflow: hidden;
+        }
+
+        .data-table td {
+            display: grid;
+            grid-template-columns: 105px minmax(0, 1fr);
+            gap: .75rem;
+            align-items: center;
+            padding: .72rem .85rem;
+            white-space: normal;
+        }
+
+        .data-table td::before {
+            content: attr(data-label);
+            font-size: .68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: #94A3B8;
+        }
+
+        .td-action { text-align: left; }
+        .status-form { justify-content: flex-start; }
+        .status-select { width: 100%; max-width: 170px; }
+    }
+</style>
