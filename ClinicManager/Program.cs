@@ -31,6 +31,7 @@ builder.Services.AddScoped<DoctorMapper>();
 builder.Services.AddScoped<VisitMapper>();
 builder.Services.AddScoped<MedicationMapper>();
 builder.Services.AddScoped<ClinicalNoteMapper>();
+builder.Services.AddScoped<PrescriptionItemMapper>();
 
 // Business services
 builder.Services.AddScoped<IPatientService, PatientService>();
@@ -42,6 +43,7 @@ builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 builder.Services.AddScoped<IClinicalNoteService, ClinicalNoteService>();
 builder.Services.AddScoped<IProcedureService, ProcedureService>();
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IVisitMedicationService, VisitMedicationService>();
 
 //BackgroundServices
 builder.Services.AddHostedService<NextDayReportAutomationService>();
