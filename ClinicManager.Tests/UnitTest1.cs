@@ -1,12 +1,17 @@
 using System.ComponentModel.DataAnnotations;
 using ClinicManager.Controllers;
+using ClinicManager.Controllers.Api;
+using ClinicManager.Data;
 using ClinicManager.DTOs;
+using ClinicManager.Mappers;
 using ClinicManager.Models;
 using ClinicManager.Services;
 using ClinicManager.ViewModels;
+using Microsoft.Data.Sqlite;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ClinicManager.Tests;
@@ -591,6 +596,137 @@ public class VisitsControllerTests
         public void SaveTempData(HttpContext context, IDictionary<string, object> values)
         {
         }
+    }
+}
+
+public class VisitsApiControllerTests
+{
+    [Test]
+    public async Task GetActiveVisits_ReturnsActiveVisitsFromService()
+    {
+        var visitService = new ActiveVisitsService
+        {
+            ActiveVisits =
+            [
+                new ActiveVisitDto
+                {
+                    VisitId = 12,
+                    VisitStatus = VisitState.InProgress,
+                    VisitDateTime = new DateTime(2026, 6, 16, 11, 30, 0),
+                    PatientId = 3,
+                    PatientFullName = "Anna Kowalska",
+                    PatientPESEL = "91020312345",
+                    DoctorId = 4,
+                    DoctorFullName = "Adam Wiśniewski",
+                    DoctorSpecialization = "Kardiolog"
+                }
+            ]
+        };
+        var controller = new VisitsApiController(
+            visitService,
+            NullLogger<VisitsApiController>.Instance);
+
+        var result = await controller.GetActiveVisits(CancellationToken.None);
+
+        var okResult = result.Result as OkObjectResult;
+        Assert.That(okResult, Is.Not.Null);
+
+        var model = okResult!.Value as IReadOnlyList<ActiveVisitDto>;
+        Assert.That(model, Is.Not.Null);
+        Assert.That(model!, Has.Count.EqualTo(1));
+        Assert.That(model![0].PatientFullName, Is.EqualTo("Anna Kowalska"));
+        Assert.That(visitService.GetActiveVisitsWasCalled, Is.True);
+    }
+
+    private sealed class ActiveVisitsService : IVisitService
+    {
+        public IReadOnlyList<ActiveVisitDto> ActiveVisits { get; set; } = Array.Empty<ActiveVisitDto>();
+        public bool GetActiveVisitsWasCalled { get; private set; }
+
+        public Task<IReadOnlyList<VisitDto>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IReadOnlyList<VisitListItemDto>> GetListAsync(CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<VisitDto?> GetByIdAsync(int visitId, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IReadOnlyList<PatientVisitDto>> GetByPatientIdAsync(
+            int patientId,
+            CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IReadOnlyList<ActiveVisitDto>> GetActiveVisitsAsync(
+            CancellationToken cancellationToken = default)
+        {
+            GetActiveVisitsWasCalled = true;
+
+            return Task.FromResult(ActiveVisits);
+        }
+
+        public Task<VisitDto> CreateAsync(CreateVisitDto dto, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> UpdateStatusAsync(
+            int visitId,
+            VisitState visitStatus,
+            CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}
+
+public class VisitServiceActiveVisitsTests
+{
+    [Test]
+    public async Task GetActiveVisitsAsync_ReturnsOnlyActiveVisitsWithPatientAndDoctorData()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+
+        var options = new DbContextOptionsBuilder<ClinicDbContext>()
+            .UseSqlite(connection)
+            .Options;
+
+        await using var dbContext = new ClinicDbContext(options);
+        await dbContext.Database.EnsureCreatedAsync();
+
+        dbContext.Visits.Add(new Visit
+        {
+            VisitId = 3,
+            VisitStatus = VisitState.Finished,
+            PatientId = 1,
+            DoctorId = 1,
+            VisitDateTime = new DateTime(2026, 6, 17, 9, 0, 0)
+        });
+        await dbContext.SaveChangesAsync();
+
+        var service = new VisitService(
+            dbContext,
+            new VisitMapper(),
+            NullLogger<VisitService>.Instance);
+
+        var visits = await service.GetActiveVisitsAsync(CancellationToken.None);
+
+        Assert.That(visits, Has.Count.EqualTo(2));
+        Assert.That(visits.Select(visit => visit.VisitStatus), Is.All.Matches<VisitState>(
+            status => status is VisitState.Planned or VisitState.InProgress));
+        Assert.That(visits[0].PatientFullName, Is.EqualTo("Jan Nowak"));
+        Assert.That(visits[0].PatientPESEL, Is.EqualTo("90051401234"));
+        Assert.That(visits[0].DoctorFullName, Is.EqualTo("Ewa Kowalczyk"));
+        Assert.That(visits[0].DoctorSpecialization, Is.EqualTo("Neurolog"));
     }
 }
 
