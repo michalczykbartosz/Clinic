@@ -9,11 +9,13 @@ public class DoctorService : IDoctorService
 {
     private readonly ClinicDbContext _dbContext;
     private readonly DoctorMapper _doctorMapper;
+    private readonly ILogger<DoctorService> _logger;
 
-    public DoctorService(ClinicDbContext dbContext, DoctorMapper doctorMapper)
+    public DoctorService(ClinicDbContext dbContext, DoctorMapper doctorMapper, ILogger<DoctorService> logger)
     {
         _dbContext = dbContext;
         _doctorMapper = doctorMapper;
+        _logger = logger;
     }
 
     public async Task<IReadOnlyList<DoctorDto>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -33,6 +35,12 @@ public class DoctorService : IDoctorService
             .AsNoTracking()
             .FirstOrDefaultAsync(doctor => doctor.DoctorId == doctorId, cancellationToken);
 
-        return doctor is null ? null : _doctorMapper.ToDto(doctor);
+        if (doctor is null)
+        {
+            _logger.LogWarning("Nie znaleziono lekarza {DoctorId}", doctorId);
+            return null;
+        }
+
+        return _doctorMapper.ToDto(doctor);
     }
 }

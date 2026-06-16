@@ -455,7 +455,9 @@ public class VisitMedicationsControllerTests
             }
         };
 
-        var controller = new VisitMedicationsController(service);
+        var controller = new VisitMedicationsController(
+            service,
+            NullLogger<VisitMedicationsController>.Instance);
 
         var result = await controller.Index(5, CancellationToken.None);
 
@@ -472,7 +474,9 @@ public class VisitMedicationsControllerTests
     public async Task Create_Post_WhenMedicationIsValid_AddsMedicationAndRedirectsToIndex()
     {
         var service = new StubVisitMedicationService { AddedVisitId = 5 };
-        var controller = new VisitMedicationsController(service)
+        var controller = new VisitMedicationsController(
+            service,
+            NullLogger<VisitMedicationsController>.Instance)
         {
             TempData = new TempDataDictionary(
                 new DefaultHttpContext(),

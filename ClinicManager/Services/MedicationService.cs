@@ -10,11 +10,16 @@ public class MedicationService : IMedicationService
 {
     private readonly ClinicDbContext _dbContext;
     private readonly MedicationMapper _medicationMapper;
+    private readonly ILogger<MedicationService> _logger;
 
-    public MedicationService(ClinicDbContext dbContext, MedicationMapper medicationMapper)
+    public MedicationService(
+        ClinicDbContext dbContext,
+        MedicationMapper medicationMapper,
+        ILogger<MedicationService> logger)
     {
         _dbContext = dbContext;
         _medicationMapper = medicationMapper;
+        _logger = logger;
     }
 
     public async Task<IReadOnlyList<MedicationDto>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -41,6 +46,7 @@ public class MedicationService : IMedicationService
         Medication newMedication = _medicationMapper.ToEntity(newMedicationDto);
         await _dbContext.Medications.AddAsync(newMedication);
         await _dbContext.SaveChangesAsync();
+        _logger.LogInformation("Dodano lek {MedicationId}: {MedicationName}", newMedication.MedicationId, newMedication.Name);
         return (true, "");
 
     }
@@ -50,6 +56,7 @@ public class MedicationService : IMedicationService
         Medication newMedication = _medicationMapper.ToEntity(newMedicationDto);
         _dbContext.Medications.Update(newMedication);
         await _dbContext.SaveChangesAsync();
+        _logger.LogInformation("Zaktualizowano lek {MedicationId}: {MedicationName}", newMedication.MedicationId, newMedication.Name);
         return (true, "");
     }
 }
