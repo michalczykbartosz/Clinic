@@ -2,7 +2,9 @@ using ClinicManager.DTOs;
 using ClinicManager.Services;
 using ClinicManager.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ClinicManager.Controllers;
 
@@ -12,17 +14,26 @@ public class PatientsController : Controller
     private readonly IPatientService _patientService;
     private readonly IVisitService _visitService;
     private readonly IPatientDocumentService _documentService;
+    private readonly IUserManagementService _userManagementService;
+    private readonly UserManager<IdentityUser> _userManager;
+    private readonly SignInManager<IdentityUser> _signInManager;
     private readonly ILogger<PatientsController> _logger;
 
     public PatientsController(
         IPatientService patientService,
         IVisitService visitService,
         IPatientDocumentService documentService,
+        IUserManagementService userManagementService,
+        UserManager<IdentityUser> userManager,
+        SignInManager<IdentityUser> signInManager,
         ILogger<PatientsController> logger)
     {
         _patientService = patientService;
         _visitService = visitService;
         _documentService = documentService;
+        _userManagementService = userManagementService;
+        _userManager = userManager;
+        _signInManager = signInManager;
         _logger = logger;
     }
 
@@ -33,6 +44,11 @@ public class PatientsController : Controller
         ViewData["Query"] = query;
 
         var patients = await _patientService.SearchAsync(query, cancellationToken);
+        var employeePesels = await _userManagementService.GetEmployeePatientPeselsAsync();
+        patients = patients
+            .Where(patient => !employeePesels.Contains(patient.PESEL))
+            .ToList();
+
         return View(patients);
     }
 
@@ -86,7 +102,17 @@ public class PatientsController : Controller
             return View(model);
         }
 
-        var patient = await _patientService.CreateAsync(model, cancellationToken);
+        PatientDto patient;
+        try
+        {
+            patient = await _patientService.CreateAsync(model, cancellationToken);
+        }
+        catch (InvalidOperationException exception)
+        {
+            ModelState.AddModelError(string.Empty, exception.Message);
+            return View(model);
+        }
+
         TempData["SuccessMessage"] = "Pacjent został dodany.";
 
         return RedirectToAction(nameof(Details), new { id = patient.PatientId });
@@ -115,7 +141,17 @@ public class PatientsController : Controller
             return View(model);
         }
 
-        var updated = await _patientService.UpdateAsync(id, model, cancellationToken);
+        bool updated;
+        try
+        {
+            updated = await _patientService.UpdateAsync(id, model, cancellationToken);
+        }
+        catch (InvalidOperationException exception)
+        {
+            ModelState.AddModelError(string.Empty, exception.Message);
+            return View(model);
+        }
+
         if (!updated)
         {
             return NotFound();
@@ -164,6 +200,61 @@ public class PatientsController : Controller
 
         TempData["SuccessMessage"] = "Kartoteka pacjenta została uzupełniona.";
         return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Pacjent")]
+    public async Task<IActionResult> MyData(CancellationToken cancellationToken)
+    {
+        var patient = await GetCurrentPatientAsync(cancellationToken);
+        if (patient is null)
+        {
+            ViewData["PatientAccessMessage"] = "Nie udało się znaleźć kartoteki powiązanej z Twoim kontem.";
+            return View(new UpsertPatientDto());
+        }
+
+        return View(ToUpsertPatientDto(patient));
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Pacjent")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> MyData(UpsertPatientDto model, CancellationToken cancellationToken)
+    {
+        var patient = await GetCurrentPatientAsync(cancellationToken);
+        if (patient is null)
+        {
+            ModelState.AddModelError(string.Empty, "Nie udało się znaleźć kartoteki powiązanej z Twoim kontem.");
+            return View(model);
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var previousPesel = patient.PESEL;
+        try
+        {
+            var updated = await _patientService.UpdateAsync(patient.PatientId, model, cancellationToken);
+            if (!updated)
+            {
+                return NotFound();
+            }
+        }
+        catch (InvalidOperationException exception)
+        {
+            ModelState.AddModelError(string.Empty, exception.Message);
+            return View(model);
+        }
+
+        if (!string.Equals(previousPesel, model.PESEL.Trim(), StringComparison.Ordinal))
+        {
+            await UpdatePatientPeselClaimAsync(model.PESEL.Trim());
+        }
+
+        TempData["SuccessMessage"] = "Twoje dane zostały zaktualizowane.";
+        return RedirectToAction(nameof(MyData));
     }
 
     [HttpGet]
@@ -221,6 +312,41 @@ public class PatientsController : Controller
             InsuranceNumber = patient.InsuranceNumber,
             BirthDate = patient.BirthDate
         };
+    }
+
+    private async Task<PatientDto?> GetCurrentPatientAsync(CancellationToken cancellationToken)
+    {
+        var patientPesel = User.FindFirstValue("PatientPesel");
+        if (string.IsNullOrWhiteSpace(patientPesel))
+        {
+            return null;
+        }
+
+        return await _patientService.GetByPeselAsync(patientPesel, cancellationToken);
+    }
+
+    private async Task UpdatePatientPeselClaimAsync(string pesel)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return;
+        }
+
+        var claims = await _userManager.GetClaimsAsync(user);
+        var existingClaim = claims.FirstOrDefault(claim => claim.Type == "PatientPesel");
+        var newClaim = new Claim("PatientPesel", pesel);
+
+        if (existingClaim is null)
+        {
+            await _userManager.AddClaimAsync(user, newClaim);
+        }
+        else
+        {
+            await _userManager.ReplaceClaimAsync(user, existingClaim, newClaim);
+        }
+
+        await _signInManager.RefreshSignInAsync(user);
     }
 
     private static UpdatePatientRecordDto ToUpdatePatientRecordDto(PatientDto patient)

@@ -32,7 +32,7 @@ public class ProceduresController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Lekarz")]
+    [Authorize(Roles = "Admin,Lekarz")]
     public async Task<IActionResult> Create(int visitId, CancellationToken cancellationToken)
     {
         var model = await _procedureService.BuildCreateModelAsync(visitId, cancellationToken);
@@ -46,7 +46,7 @@ public class ProceduresController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Lekarz")]
+    [Authorize(Roles = "Admin,Lekarz")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateProcedureDto model, CancellationToken cancellationToken)
     {

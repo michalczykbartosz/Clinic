@@ -59,4 +59,31 @@ public class MedicationService : IMedicationService
         _logger.LogInformation("Zaktualizowano lek {MedicationId}: {MedicationName}", newMedication.MedicationId, newMedication.Name);
         return (true, "");
     }
+
+    public async Task<(bool success, string errorMessage)> DeleteMedicationAsync(
+        int medicationId,
+        CancellationToken cancellationToken = default)
+    {
+        var medication = await _dbContext.Medications
+            .FirstOrDefaultAsync(medication => medication.MedicationId == medicationId, cancellationToken);
+
+        if (medication is null)
+        {
+            return (false, "Nie znaleziono leku do usunięcia.");
+        }
+
+        var isUsed = await _dbContext.PrescriptionItems
+            .AnyAsync(item => item.MedicationId == medicationId, cancellationToken);
+
+        if (isUsed)
+        {
+            return (false, "Nie można usunąć leku, który jest już przypisany do wizyty.");
+        }
+
+        _dbContext.Medications.Remove(medication);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Usunięto lek {MedicationId}: {MedicationName}", medication.MedicationId, medication.Name);
+        return (true, string.Empty);
+    }
 }

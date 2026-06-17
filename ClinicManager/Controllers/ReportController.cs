@@ -1,7 +1,7 @@
-﻿using ClinicManager.Services;
-using Microsoft.AspNetCore.Mvc;
+using ClinicManager.DTOs;
+using ClinicManager.Services;
 using Microsoft.AspNetCore.Authorization;
-
+using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicManager.Controllers;
 
@@ -17,40 +17,48 @@ public class ReportController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles="Admin")]
-    public async Task<IActionResult> Index()
+    [Authorize(Roles = "Admin")]
+    public IActionResult Index()
     {
         return View();
     }
-    
-    
+
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> GetReportCost(int? patientId, int? doctorId,
-        DateOnly startDate, DateOnly endDate, CancellationToken cancellationToken = default)
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GetReportCost(
+        int? patientId,
+        int? doctorId,
+        DateOnly startDate,
+        DateOnly endDate,
+        ReportCostScope scope = ReportCostScope.Procedures,
+        CancellationToken cancellationToken = default)
     {
         var (success, raport, error) =
-            await _reportService.GetReportCostAsync(patientId, doctorId, startDate, endDate, cancellationToken);
+            await _reportService.GetReportCostAsync(patientId, doctorId, startDate, endDate, scope, cancellationToken);
 
         if (!success)
         {
             _logger.LogError(
-                "Nie udało się wygenerować raportu kosztów. PatientId={PatientId}, DoctorId={DoctorId}, StartDate={StartDate}, EndDate={EndDate}, Error={Error}",
+                "Nie udało się wygenerować raportu kosztów. PatientId={PatientId}, DoctorId={DoctorId}, StartDate={StartDate}, EndDate={EndDate}, Scope={Scope}, Error={Error}",
                 patientId,
                 doctorId,
                 startDate,
                 endDate,
+                scope,
                 error);
-            ModelState.AddModelError(string.Empty,"Wystąpił błąd podczas pobierania danych!");
+            ModelState.AddModelError(string.Empty, "Wystąpił błąd podczas pobierania danych!");
             return View();
         }
 
         _logger.LogInformation(
-            "Wygenerowano raport kosztów. PatientId={PatientId}, DoctorId={DoctorId}, StartDate={StartDate}, EndDate={EndDate}",
+            "Wygenerowano raport kosztów. PatientId={PatientId}, DoctorId={DoctorId}, StartDate={StartDate}, EndDate={EndDate}, Scope={Scope}",
             patientId,
             doctorId,
             startDate,
-            endDate);
+            endDate,
+            scope);
+
         return View(raport);
     }
 }

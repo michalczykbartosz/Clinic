@@ -34,9 +34,7 @@ public class ClinicDbContext : IdentityDbContext
             .HasForeignKey(document => document.PatientId)
             .OnDelete(DeleteBehavior.Cascade);
         
-        modelBuilder.Entity<Doctor>().HasData(
-            new Doctor { DoctorId = 1, FirstName = "Adam", LastName = "Wiśniewski", PESEL = "75081911223", BirthDate = new DateOnly(1975, 8, 19), PwzNumber = "1234567", Specialization = "Kardiolog" },
-            new Doctor { DoctorId = 2, FirstName = "Ewa", LastName = "Kowalczyk", PESEL = "82031509876", BirthDate = new DateOnly(1982, 3, 15), PwzNumber = "7654321", Specialization = "Neurolog" });
+
 
         modelBuilder.Entity<Patient>().HasData(
             new Patient { PatientId = 1, FirstName = "Jan", LastName = "Nowak", PESEL = "90051401234", InsuranceNumber = "NFZ-998877", BirthDate = new DateOnly(1990, 5, 14) });
