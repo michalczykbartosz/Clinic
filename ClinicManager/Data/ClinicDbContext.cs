@@ -41,6 +41,10 @@ public class ClinicDbContext : IdentityDbContext
 
         modelBuilder.Entity<Medication>().HasData(
             new Medication { MedicationId = 1, Name = "Ibuprom Max", Manufacturer = "US Pharmacia", Dose = "400mg" });
+
+        modelBuilder.Entity<Doctor>().HasData(
+            new Doctor { DoctorId = 1, FirstName = "Ewa", LastName = "Kowalczyk", PESEL = "82031509876", BirthDate = new DateOnly(1982, 3, 15), PwzNumber = "7654321", Specialization = "Neurolog" },
+            new Doctor { DoctorId = 2, FirstName = "Adam", LastName = "Wiśniewski", PESEL = "75081911223", BirthDate = new DateOnly(1975, 8, 19), PwzNumber = "1234567", Specialization = "Kardiolog" });
         
         modelBuilder.Entity<IdentityRole>().HasData(
             new IdentityRole { Id = "1", Name = "Pacjent", NormalizedName = "PACJENT",ConcurrencyStamp = "test"});
