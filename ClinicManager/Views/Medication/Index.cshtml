@@ -29,6 +29,16 @@
         </a>
     </div>
 
+    @if (TempData["SuccessMessage"] is string successMessage)
+    {
+        <div class="alert alert-success" role="alert">@successMessage</div>
+    }
+
+    @if (TempData["ErrorMessage"] is string errorMessage)
+    {
+        <div class="alert alert-danger" role="alert">@errorMessage</div>
+    }
+
     @if (Model == null || !Model.Any())
     {
         <div class="empty-state">
@@ -63,7 +73,13 @@
                             <td class="td-action">
                                 <div class="action-group">
                                     <a asp-action="Edit" asp-route-medicationId="@med.MedicationId" class="btn-mini btn-mini--primary">Edytuj</a>
-                                    <a asp-action="Delete" asp-route-medicationId="@med.MedicationId" class="btn-mini btn-mini--danger">Usuń</a>
+                                    <form asp-action="Delete"
+                                          asp-route-medicationId="@med.MedicationId"
+                                          method="post"
+                                          class="inline-form"
+                                          onsubmit="return confirm('Czy na pewno chcesz usunąć lek @med.Name?');">
+                                        <button type="submit" class="btn-mini btn-mini--danger">Usuń</button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
@@ -100,6 +116,10 @@
     .dose-chip { display: inline-block; font-size: .74rem; font-weight: 600; color: #64748B; background: #F1F5F9; border-radius: 6px; padding: .2rem .55rem; }
     .cell--muted { color: #64748B; }
     .action-group { display: inline-flex; align-items: center; justify-content: flex-end; gap: .45rem; }
+    .inline-form { display: inline-flex; margin: 0; }
+    .alert { margin-bottom: 1rem; border-radius: 9px; padding: .8rem 1rem; font-size: .875rem; font-weight: 600; }
+    .alert-success { background: #F0FDF4; border: 1px solid #BBF7D0; color: #166534; }
+    .alert-danger { background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; }
     .btn, .btn-mini { display: inline-flex; align-items: center; justify-content: center; gap: .45rem; font-weight: 600; border: 1.5px solid transparent; cursor: pointer; text-decoration: none; transition: all .18s; font-family: inherit; white-space: nowrap; }
     .btn { padding: .6rem 1.3rem; font-size: .875rem; border-radius: 9px; }
     .btn-mini { padding: .4rem .8rem; font-size: .78rem; border-radius: 7px; }

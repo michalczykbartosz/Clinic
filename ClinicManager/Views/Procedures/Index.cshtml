@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Procedury";
-    var canAddProcedure = User.IsInRole("Lekarz");
+    var canAddProcedure = User.IsInRole("Admin") || User.IsInRole("Lekarz");
 }
 
 <div class="d-flex align-items-center justify-content-between mb-3">

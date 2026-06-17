@@ -1,13 +1,15 @@
 @model ClinicManager.DTOs.UpdateDoctorProfileDto
 
 @{
-    ViewData["Title"] = "Moj profil lekarza";
+    var adminEditUserId = ViewData["AdminEditUserId"] as string;
+    var isAdminEdit = !string.IsNullOrWhiteSpace(adminEditUserId);
+    ViewData["Title"] = isAdminEdit ? "Profil lekarza" : "Moj profil lekarza";
 }
 
 <div class="profile-wrapper">
     <div class="page-header">
         <div>
-            <h1 class="page-header__title">M&oacute;j profil lekarza</h1>
+            <h1 class="page-header__title">@(isAdminEdit ? "Profil lekarza" : "Mój profil lekarza")</h1>
             <p class="page-header__sub">Uzupe&#322;nij dane widoczne przy wizytach i grafiku.</p>
         </div>
     </div>
@@ -23,7 +25,7 @@
     }
 
     <div class="profile-card">
-        <form asp-action="Edit" method="post">
+        <form asp-action="@(isAdminEdit ? "EditEmployee" : "Edit")" asp-route-userId="@adminEditUserId" method="post">
             <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
             <input asp-for="DoctorId" type="hidden" />
             <input asp-for="FirstName" type="hidden" />
@@ -61,7 +63,14 @@
 
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">Zapisz profil</button>
-                <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Anuluj</a>
+                @if (isAdminEdit)
+                {
+                    <a asp-controller="AdminUsers" asp-action="Employees" class="btn btn-secondary">Anuluj</a>
+                }
+                else
+                {
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Anuluj</a>
+                }
             </div>
         </form>
     </div>

@@ -10,4 +10,5 @@ public interface IMedicationService
     Task<(bool success,string errorMessage)> AddMedicationAsync(MedicationDto newMedicationDto);
 
     Task<(bool success, string errorMessage)> UpdateMedicationAsync(MedicationDto newMedicationDto);
+    Task<(bool success, string errorMessage)> DeleteMedicationAsync(int medicationId, CancellationToken cancellationToken = default);
 }

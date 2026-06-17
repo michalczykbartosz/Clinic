@@ -29,6 +29,22 @@
             <div class="form-section">
                 <h2 class="form-section__title">
                     <span class="form-section__number">01</span>
+                    Zakres kosztów
+                </h2>
+
+                <div class="form-group">
+                    <label class="form-label" for="scope">Co ma zawierać raport</label>
+                    <select id="scope" name="scope" class="form-control" required>
+                        <option value="Procedures">Tylko koszty procedur</option>
+                        <option value="Visits">Tylko koszty wizyt</option>
+                        <option value="VisitsAndProcedures">Wizyty + procedury</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2 class="form-section__title">
+                    <span class="form-section__number">02</span>
                     Filtrowanie
                 </h2>
 
@@ -63,7 +79,7 @@
 
             <div class="form-section">
                 <h2 class="form-section__title">
-                    <span class="form-section__number">02</span>
+                    <span class="form-section__number">03</span>
                     Zakres dat
                 </h2>
 

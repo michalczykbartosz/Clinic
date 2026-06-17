@@ -12,6 +12,7 @@
 <body>
     @{
         var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+        var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
     }
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm app-navbar mb-3">
@@ -43,11 +44,17 @@
                             <li class="nav-item">
                                 <a class="nav-link app-nav-link @(currentController == "Visits" ? "active" : "")" asp-area="" asp-controller="Visits" asp-action="Index">Przejdź do wizyt</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link app-nav-link @(currentController == "Patients" && currentAction == "MyData" ? "active" : "")" asp-area="" asp-controller="Patients" asp-action="MyData">Moje dane</a>
+                            </li>
                         }
                         @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link app-nav-link @(currentController == "AdminUsers" ? "active" : "")" asp-area="" asp-controller="AdminUsers" asp-action="GetRoles">Konta</a>
+                                <a class="nav-link app-nav-link @(currentAction == "Employees" ? "active" : "")" asp-area="" asp-controller="AdminUsers" asp-action="Employees">Pracownicy</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link app-nav-link @(currentController == "AdminUsers" && currentAction == "GetRoles" ? "active" : "")" asp-area="" asp-controller="AdminUsers" asp-action="GetRoles">Konta</a>
                             </li>
                         }
                         @if (User.IsInRole("Admin") || User.IsInRole("Lekarz"))
