@@ -1,4 +1,5 @@
 using ClinicManager.Data;
+using ClinicManager.DTOs;
 using ClinicManager.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -17,6 +18,7 @@ public class ReportServiceTests
             null,
             new DateOnly(2026, 6, 1),
             new DateOnly(2026, 6, 30),
+            ReportCostScope.Procedures,
             CancellationToken.None);
 
         Assert.That(result.success, Is.True);
@@ -34,6 +36,7 @@ public class ReportServiceTests
             null,
             new DateOnly(2026, 6, 1),
             new DateOnly(2026, 6, 30),
+            ReportCostScope.Procedures,
             CancellationToken.None);
 
         Assert.That(result.Item2!.OverallCost, Is.EqualTo(200m));
@@ -50,6 +53,7 @@ public class ReportServiceTests
             2,
             new DateOnly(2026, 6, 1),
             new DateOnly(2026, 6, 30),
+            ReportCostScope.Procedures,
             CancellationToken.None);
 
         Assert.That(result.Item2!.OverallCost, Is.EqualTo(200m));

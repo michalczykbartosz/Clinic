@@ -78,6 +78,11 @@ public class AdminUsersControllerTests
             return Task.FromResult(Users);
         }
 
+        public Task<List<EmployeeDto>> GetEmployeesAsync()
+        {
+            return Task.FromResult(new List<EmployeeDto>());
+        }
+
         public Task<UserRolesDto?> GetUserRolesAsync(string id)
         {
             return Task.FromResult(User);
@@ -92,6 +97,11 @@ public class AdminUsersControllerTests
         {
             DeletedUserId = id;
             return Task.FromResult((true, string.Empty));
+        }
+
+        public Task<HashSet<string>> GetEmployeePatientPeselsAsync()
+        {
+            return Task.FromResult(new HashSet<string>());
         }
     }
 }

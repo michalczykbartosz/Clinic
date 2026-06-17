@@ -70,6 +70,9 @@ public class PatientsControllerTests
                     }
                 ]
             },
+            new StubUserManagementService(),
+            new TestUserManager(),
+            null!,
             NullLogger<PatientsController>.Instance);
 
         var result = await controller.Details(1, CancellationToken.None);
@@ -93,6 +96,9 @@ public class PatientsControllerTests
             new StubPatientService(),
             new StubVisitService(),
             new StubPatientDocumentService(),
+            new StubUserManagementService(),
+            new TestUserManager(),
+            null!,
             NullLogger<PatientsController>.Instance);
 
         var result = await controller.Details(999, CancellationToken.None);
@@ -117,6 +123,9 @@ public class PatientsControllerTests
             },
             new StubVisitService(),
             new StubPatientDocumentService(),
+            new StubUserManagementService(),
+            new TestUserManager(),
+            null!,
             NullLogger<PatientsController>.Instance);
 
         var result = await controller.Record(2, CancellationToken.None);
@@ -138,6 +147,9 @@ public class PatientsControllerTests
             patientService,
             new StubVisitService(),
             new StubPatientDocumentService(),
+            new StubUserManagementService(),
+            new TestUserManager(),
+            null!,
             NullLogger<PatientsController>.Instance)
         {
             TempData = new TempDataDictionary(
@@ -307,6 +319,39 @@ public class PatientsControllerTests
         public Task<int?> DeleteAsync(int documentId, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
+        }
+    }
+
+    private sealed class StubUserManagementService : IUserManagementService
+    {
+        public Task<List<UserRolesDto>> GetAllUsersWithRolesAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<EmployeeDto>> GetEmployeesAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<UserRolesDto?> GetUserRolesAsync(string id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<(bool Success, string ErrorMessage)> EditRolesAsync(string id, List<string> roleNames)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<(bool Success, string ErrorMessage)> DeleteUserAsync(string id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<HashSet<string>> GetEmployeePatientPeselsAsync()
+        {
+            return Task.FromResult(new HashSet<string>());
         }
     }
 

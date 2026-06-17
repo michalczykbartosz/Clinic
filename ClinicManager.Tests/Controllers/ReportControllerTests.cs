@@ -13,7 +13,7 @@ public class ReportControllerTests
     {
         var controller = new ReportController(new StubReportService(), NullLogger<ReportController>.Instance);
 
-        var result = await controller.Index();
+        var result = controller.Index();
 
         Assert.That(result, Is.InstanceOf<ViewResult>());
     }
@@ -54,6 +54,7 @@ public class ReportControllerTests
             int? doctorId,
             DateOnly startDate,
             DateOnly endDate,
+            ReportCostScope scope,
             CancellationToken cancellationToken = default)
         {
             return Task.FromResult(Result);
