@@ -92,5 +92,12 @@ public class MedicationControllerTests
         {
             return Task.FromResult((true, string.Empty));
         }
+
+        public Task<(bool success, string errorMessage)> DeleteMedicationAsync(
+            int medicationId,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult((true, string.Empty));
+        }
     }
 }

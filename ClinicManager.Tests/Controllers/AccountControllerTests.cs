@@ -2,6 +2,7 @@ using System.Security.Claims;
 using ClinicManager.Controllers;
 using ClinicManager.DTOs;
 using ClinicManager.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -28,7 +29,13 @@ public class AccountControllerTests
     public async Task Login_Post_WhenServiceFails_ReturnsViewWithModelError()
     {
         var authService = new StubAuthenticationService { LoginResult = (false, "Bledne dane") };
-        var controller = new AccountController(authService, NullLogger<AccountController>.Instance);
+        var controller = new AccountController(authService, NullLogger<AccountController>.Instance)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+            }
+        };
         var model = new LoginDto { Email = "patient@example.com", Password = "secret" };
 
         var result = await controller.Login(model);

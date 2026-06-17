@@ -1,5 +1,5 @@
 <Solution>
-  <Project Path="ClinicManager.LoadTests/ClinicManager.LoadTests.csproj" />
+  <Project Path="ClinicManager.Tests/ClinicManager.LoadTests/ClinicManager.LoadTests.csproj" />
   <Project Path="ClinicManager.Tests/ClinicManager.Tests.csproj" />
   <Project Path="ClinicManager/ClinicManager.csproj" />
 </Solution>

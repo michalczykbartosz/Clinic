@@ -26,4 +26,10 @@
     <ProjectReference Include="..\ClinicManager\ClinicManager.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="ClinicManager.LoadTests\**\*.cs" />
+    <EmbeddedResource Remove="ClinicManager.LoadTests\**\*" />
+    <None Remove="ClinicManager.LoadTests\**\*" />
+  </ItemGroup>
+
 </Project>

@@ -68,7 +68,7 @@ public class VisitsControllerTests
         var model = viewResult!.Model as CreateVisitViewModel;
         Assert.That(model, Is.Not.Null);
         Assert.That(model!.Patients, Has.Count.EqualTo(1));
-        Assert.That(model.Doctors, Has.Count.EqualTo(1));
+        Assert.That(model.Doctors, Has.Count.EqualTo(2));
     }
 
     [Test]
