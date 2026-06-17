@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
+using ClinicManager.Data;
 using ClinicManager.DTOs;
+using ClinicManager.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace ClinicManager.Services;
@@ -8,15 +11,18 @@ public class AuthenticationService : IAuthenticationService
 {
     private readonly UserManager<IdentityUser> _userManager;
     private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly ClinicDbContext _dbContext;
     private readonly ILogger<AuthenticationService> _logger;
 
     public AuthenticationService(
         UserManager<IdentityUser> userManager,
         SignInManager<IdentityUser> signInManager,
+        ClinicDbContext dbContext,
         ILogger<AuthenticationService> logger)
     {
         _userManager = userManager;
         _signInManager = signInManager;
+        _dbContext = dbContext;
         _logger = logger;
     }
 
@@ -28,7 +34,7 @@ public class AuthenticationService : IAuthenticationService
         if (existingUser != null)
         {
             _logger.LogWarning("Próba rejestracji na istniejący adres e-mail {Email}", email);
-            return (false, new[] { "Email już zarejestrowany" });
+            return (false, ["Email już zarejestrowany."]);
         }
 
         var user = new IdentityUser
@@ -38,10 +44,9 @@ public class AuthenticationService : IAuthenticationService
         };
 
         var result = await _userManager.CreateAsync(user, dto.Password);
-
         if (!result.Succeeded)
         {
-            var errors = result.Errors.Select(e => e.Description).ToArray();
+            var errors = result.Errors.Select(error => error.Description).ToArray();
             _logger.LogWarning("Nie udało się zarejestrować użytkownika {Email}: {Errors}", email, string.Join("; ", errors));
             return (false, errors);
         }
@@ -50,7 +55,7 @@ public class AuthenticationService : IAuthenticationService
         if (!claimResult.Succeeded)
         {
             await _userManager.DeleteAsync(user);
-            var errors = claimResult.Errors.Select(e => e.Description).ToArray();
+            var errors = claimResult.Errors.Select(error => error.Description).ToArray();
             _logger.LogWarning("Nie udało się zapisać PESEL użytkownika {Email}: {Errors}", email, string.Join("; ", errors));
             return (false, errors);
         }
@@ -59,13 +64,39 @@ public class AuthenticationService : IAuthenticationService
         if (!roleResult.Succeeded)
         {
             await _userManager.DeleteAsync(user);
-            var errors = roleResult.Errors.Select(e => e.Description).ToArray();
+            var errors = roleResult.Errors.Select(error => error.Description).ToArray();
             _logger.LogWarning("Nie udało się nadać roli Pacjent użytkownikowi {Email}: {Errors}", email, string.Join("; ", errors));
             return (false, errors);
         }
 
-        _logger.LogInformation("Utworzono konto pacjenta {UserId}", user.Id);
-        return (true, Array.Empty<string>());
+        var patientExists = await _dbContext.Patients.AnyAsync(patient => patient.PESEL == pesel);
+        if (!patientExists)
+        {
+            _dbContext.Patients.Add(new Patient
+            {
+                FirstName = dto.FirstName.Trim(),
+                LastName = dto.LastName.Trim(),
+                PESEL = pesel,
+                InsuranceNumber = dto.InsuranceNumber.Trim(),
+                BirthDate = dto.BirthDate
+            });
+
+            try
+            {
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (Exception exception)
+            {
+                await _userManager.DeleteAsync(user);
+                _logger.LogError(exception, "Nie udało się utworzyć kartoteki pacjenta podczas rejestracji {Email}.", email);
+                return (false, ["Nie udało się utworzyć kartoteki pacjenta. Spróbuj ponownie."]);
+            }
+        }
+
+        await _signInManager.SignInAsync(user, isPersistent: false);
+
+        _logger.LogInformation("Utworzono i zalogowano konto pacjenta {UserId}", user.Id);
+        return (true, []);
     }
 
     public async Task<(bool Success, string ErrorMessage)> LoginAsync(string email, string password)

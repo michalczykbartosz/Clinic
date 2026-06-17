@@ -17,21 +17,33 @@
                     </svg>
                 </div>
                 <h1>Rejestracja pacjenta</h1>
-                <p>Utwórz konto, aby widzieć swoje wizyty i ich aktualny status w panelu pacjenta.</p>
+                <p>Utw&oacute;rz konto, aby widzie&#263; swoje wizyty i ich aktualny status w panelu pacjenta.</p>
             </div>
             <div class="auth-panel__note">
-                PESEL służy do powiązania konta z kartoteką pacjenta.
+                PESEL s&#322;u&#380;y do powi&#261;zania konta z kartotek&#261; pacjenta.
             </div>
         </section>
 
         <section class="auth-card">
             <div class="auth-card__header">
                 <h2>Nowe konto</h2>
-                <p>Hasło powinno mieć co najmniej 10 znaków.</p>
+                <p>Has&#322;o powinno mie&#263; co najmniej 10 znak&oacute;w.</p>
             </div>
 
             <form asp-action="Register" method="post" class="auth-form">
                 <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+                <div class="form-group">
+                    <label asp-for="FirstName" class="form-label">Imi&#281;</label>
+                    <input asp-for="FirstName" class="form-control" autocomplete="given-name" />
+                    <span asp-validation-for="FirstName" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="LastName" class="form-label">Nazwisko</label>
+                    <input asp-for="LastName" class="form-control" autocomplete="family-name" />
+                    <span asp-validation-for="LastName" class="field-error"></span>
+                </div>
 
                 <div class="form-group">
                     <label asp-for="Email" class="form-label">Adres e-mail</label>
@@ -46,20 +58,32 @@
                 </div>
 
                 <div class="form-group">
-                    <label asp-for="Password" class="form-label">Hasło</label>
+                    <label asp-for="InsuranceNumber" class="form-label">Numer ubezpieczenia</label>
+                    <input asp-for="InsuranceNumber" class="form-control" maxlength="40" autocomplete="off" />
+                    <span asp-validation-for="InsuranceNumber" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="BirthDate" class="form-label">Data urodzenia</label>
+                    <input asp-for="BirthDate" class="form-control" type="date" autocomplete="bday" />
+                    <span asp-validation-for="BirthDate" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Password" class="form-label">Has&#322;o</label>
                     <input asp-for="Password" class="form-control" autocomplete="new-password" />
                     <span asp-validation-for="Password" class="field-error"></span>
                 </div>
 
                 <div class="form-group">
-                    <label asp-for="PasswordConfirm" class="form-label">Powtórz hasło</label>
+                    <label asp-for="PasswordConfirm" class="form-label">Powt&oacute;rz has&#322;o</label>
                     <input asp-for="PasswordConfirm" class="form-control" autocomplete="new-password" />
                     <span asp-validation-for="PasswordConfirm" class="field-error"></span>
                 </div>
 
                 <div class="auth-actions">
                     <button type="submit" class="btn btn-primary">Zarejestruj</button>
-                    <a class="auth-link" asp-controller="Account" asp-action="Login">Mam już konto</a>
+                    <a class="auth-link" asp-controller="Account" asp-action="Login">Mam ju&#380; konto</a>
                 </div>
             </form>
         </section>

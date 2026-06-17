@@ -1,0 +1,105 @@
+@model ClinicManager.DTOs.UpdateDoctorProfileDto
+
+@{
+    ViewData["Title"] = "Moj profil lekarza";
+}
+
+<div class="profile-wrapper">
+    <div class="page-header">
+        <div>
+            <h1 class="page-header__title">M&oacute;j profil lekarza</h1>
+            <p class="page-header__sub">Uzupe&#322;nij dane widoczne przy wizytach i grafiku.</p>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] is string successMessage)
+    {
+        <div class="alert alert-success" role="alert">@successMessage</div>
+    }
+
+    @if (TempData["ErrorMessage"] is string errorMessage)
+    {
+        <div class="alert alert-danger" role="alert">@errorMessage</div>
+    }
+
+    <div class="profile-card">
+        <form asp-action="Edit" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+            <input asp-for="DoctorId" type="hidden" />
+            <input asp-for="FirstName" type="hidden" />
+            <input asp-for="LastName" type="hidden" />
+            <input asp-for="PESEL" type="hidden" />
+
+            <div class="readonly-grid">
+                <div class="readonly-item">
+                    <span>Imi&#281;</span>
+                    <strong>@Model.FirstName</strong>
+                </div>
+                <div class="readonly-item">
+                    <span>Nazwisko</span>
+                    <strong>@Model.LastName</strong>
+                </div>
+                <div class="readonly-item">
+                    <span>PESEL</span>
+                    <strong>@Model.PESEL</strong>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label asp-for="PwzNumber" class="form-label">Numer PWZ</label>
+                    <input asp-for="PwzNumber" class="form-control" maxlength="20" />
+                    <span asp-validation-for="PwzNumber" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Specialization" class="form-label">Specjalizacja</label>
+                    <input asp-for="Specialization" class="form-control" maxlength="80" />
+                    <span asp-validation-for="Specialization" class="field-error"></span>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Zapisz profil</button>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Anuluj</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    *, *::before, *::after { box-sizing: border-box; }
+    .profile-wrapper { max-width: 760px; margin: 2.5rem auto; padding: 0 1rem; font-family: 'Inter', system-ui, -apple-system, sans-serif; color: #1E293B; }
+    .page-header { margin-bottom: 1.5rem; }
+    .page-header__title { font-size: 1.5rem; font-weight: 700; color: #0F172A; margin: 0 0 .15rem; }
+    .page-header__sub { font-size: .86rem; color: #64748B; margin: 0; }
+    .profile-card { background: #fff; border: 1px solid #E2E8F0; border-radius: 14px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+    .readonly-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; margin-bottom: 1.25rem; }
+    .readonly-item { background: #F8FAFC; border: 1px solid #EEF2F7; border-radius: 10px; padding: .85rem; min-width: 0; }
+    .readonly-item span { display: block; font-size: .68rem; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .35rem; }
+    .readonly-item strong { display: block; color: #0F172A; overflow-wrap: anywhere; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { display: grid; gap: .4rem; }
+    .form-label { font-size: .82rem; font-weight: 600; color: #374151; margin: 0; }
+    .form-control { width: 100%; padding: .62rem .85rem; font-size: .9rem; color: #1E293B; background: #FAFAFA; border: 1.5px solid #D1D5DB; border-radius: 9px; outline: none; }
+    .form-control:focus { border-color: #3B82F6; background: #fff; box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+    .field-error { color: #B91C1C; font-size: .78rem; }
+    .alert { padding: .8rem 1rem; border-radius: 9px; font-size: .875rem; margin-bottom: 1rem; }
+    .alert:empty { display: none; }
+    .alert-success { color: #166534; background: #DCFCE7; border: 1px solid #BBF7D0; }
+    .alert-danger { color: #991B1B; background: #FEE2E2; border: 1px solid #FECACA; }
+    .form-actions { display: flex; gap: .75rem; flex-wrap: wrap; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid #F1F5F9; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; padding: .62rem 1.25rem; border-radius: 9px; border: 1.5px solid transparent; font-size: .875rem; font-weight: 600; text-decoration: none; cursor: pointer; }
+    .btn-primary { background: #2563EB; color: #fff; border-color: #2563EB; }
+    .btn-primary:hover { background: #1D4ED8; color: #fff; border-color: #1D4ED8; }
+    .btn-secondary { background: #fff; color: #475569; border-color: #D1D5DB; }
+    .btn-secondary:hover { background: #F8FAFC; color: #1E293B; border-color: #94A3B8; }
+    @@media (max-width: 640px) {
+        .readonly-grid, .form-grid { grid-template-columns: 1fr; }
+        .form-actions .btn { width: 100%; }
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

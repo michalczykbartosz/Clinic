@@ -22,9 +22,14 @@ public class AccountController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(RegisterDto model)
     {
-        if (!ModelState.IsValid) return View(model);
+        if (!ModelState.IsValid)
+        {
+            _logger.LogWarning("Nieudana rejestracja użytkownika {Email}: formularz zawiera niepoprawne dane.", model.Email);
+            return View(model);
+        }
         
         var (success, errors) = await _authService.RegisterAsync(model);
         

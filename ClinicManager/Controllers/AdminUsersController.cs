@@ -2,6 +2,7 @@
 using ClinicManager.DTOs;
 using ClinicManager.Services;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace ClinicManager.Controllers;
 
@@ -18,10 +19,19 @@ public class AdminUsersController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetRoles()
+    public async Task<IActionResult> GetRoles(string roleFilter = "all")
     {
         var dtos = await _userManagementService.GetAllUsersWithRolesAsync();
-        return View(dtos);
+        var normalizedFilter = NormalizeRoleFilter(roleFilter);
+
+        var filteredDtos = dtos
+            .Where(user => MatchesRoleFilter(user.Roles, normalizedFilter))
+            .OrderBy(user => user.Email)
+            .ToList();
+
+        ViewData["RoleFilter"] = normalizedFilter;
+        ViewData["TotalUsersCount"] = dtos.Count;
+        return View(filteredDtos);
     }
 
     [HttpGet]
@@ -58,5 +68,59 @@ public class AdminUsersController : Controller
         }
         
         return View(dto);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(string id)
+    {
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (currentUserId == id)
+        {
+            TempData["ErrorMessage"] = "Nie możesz usunąć konta, na którym jesteś aktualnie zalogowany.";
+            return RedirectToAction(nameof(GetRoles));
+        }
+
+        var (success, errorMessage) = await _userManagementService.DeleteUserAsync(id);
+        if (success)
+        {
+            _logger.LogInformation("Administrator {AdminId} usunął konto użytkownika {UserId}.", currentUserId, id);
+            TempData["SuccessMessage"] = "Konto użytkownika zostało usunięte.";
+            return RedirectToAction(nameof(GetRoles));
+        }
+
+        _logger.LogWarning("Nie udało się usunąć konta użytkownika {UserId}: {ErrorMessage}", id, errorMessage);
+        TempData["ErrorMessage"] = errorMessage;
+        return RedirectToAction(nameof(GetRoles));
+    }
+
+    private static string NormalizeRoleFilter(string roleFilter)
+    {
+        var allowedFilters = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "all",
+            "Admin",
+            "Lekarz",
+            "Rejestratorka",
+            "Pacjent",
+            "none"
+        };
+
+        return allowedFilters.Contains(roleFilter) ? roleFilter : "all";
+    }
+
+    private static bool MatchesRoleFilter(IReadOnlyCollection<string> roles, string roleFilter)
+    {
+        if (roleFilter == "all")
+        {
+            return true;
+        }
+
+        if (roleFilter == "none")
+        {
+            return !roles.Any();
+        }
+
+        return roles.Contains(roleFilter);
     }
 }
