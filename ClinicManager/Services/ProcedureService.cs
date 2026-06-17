@@ -142,8 +142,14 @@ public class ProcedureService : IProcedureService
         }
 
         var remaining = storedDescription[prefix.Length..];
-        var separator = $"{Environment.NewLine}{Environment.NewLine}";
+        var separator = "\r\n\r\n";
         var separatorIndex = remaining.IndexOf(separator, StringComparison.Ordinal);
+
+        if (separatorIndex < 0)
+        {
+            separator = "\n\n";
+            separatorIndex = remaining.IndexOf(separator, StringComparison.Ordinal);
+        }
 
         if (separatorIndex < 0)
         {
