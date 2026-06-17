@@ -82,4 +82,25 @@ public class UserManagementService : IUserManagementService
         _logger.LogError("Nie udało się zmienić ról użytkownika {UserId}: {Errors}", id, errors);
         return (false, errors);
     }
+
+    public async Task<(bool Success, string ErrorMessage)> DeleteUserAsync(string id)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+        if (user is null)
+        {
+            _logger.LogWarning("Nie znaleziono użytkownika {UserId} podczas usuwania konta.", id);
+            return (false, "Użytkownik nie istnieje.");
+        }
+
+        var result = await _userManager.DeleteAsync(user);
+        if (result.Succeeded)
+        {
+            _logger.LogInformation("Usunięto konto użytkownika {UserId} ({Email}).", id, user.Email);
+            return (true, string.Empty);
+        }
+
+        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+        _logger.LogError("Nie udało się usunąć konta użytkownika {UserId}: {Errors}", id, errors);
+        return (false, errors);
+    }
 }

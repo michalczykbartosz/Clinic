@@ -1,10 +1,13 @@
+using ClinicManager.Data;
 using ClinicManager.DTOs;
 using ClinicManager.Models;
 using ClinicManager.Services;
 using ClinicManager.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace ClinicManager.Controllers;
@@ -13,19 +16,19 @@ namespace ClinicManager.Controllers;
 public class VisitsController : Controller
 {
     private readonly IVisitService _visitService;
-    private readonly IPatientService _patientService;
-    private readonly IDoctorService _doctorService;
+    private readonly UserManager<IdentityUser> _userManager;
+    private readonly ClinicDbContext _dbContext;
     private readonly ILogger<VisitsController> _logger;
 
     public VisitsController(
         IVisitService visitService,
-        IPatientService patientService,
-        IDoctorService doctorService,
+        UserManager<IdentityUser> userManager,
+        ClinicDbContext dbContext,
         ILogger<VisitsController> logger)
     {
         _visitService = visitService;
-        _patientService = patientService;
-        _doctorService = doctorService;
+        _userManager = userManager;
+        _dbContext = dbContext;
         _logger = logger;
     }
 
@@ -148,8 +151,8 @@ public class VisitsController : Controller
         CreateVisitViewModel model,
         CancellationToken cancellationToken)
     {
-        var patients = await _patientService.GetAllAsync(cancellationToken);
-        var doctors = await _doctorService.GetAllAsync(cancellationToken);
+        var patients = await GetPatientsWithPatientAccountsAsync(cancellationToken);
+        var doctors = await GetDoctorsWithDoctorAccountsAsync(cancellationToken);
 
         model.Patients = patients
             .Select(patient => new SelectListItem
@@ -168,5 +171,120 @@ public class VisitsController : Controller
             .ToList();
 
         return model;
+    }
+
+    private async Task<IReadOnlyList<PatientDto>> GetPatientsWithPatientAccountsAsync(CancellationToken cancellationToken)
+    {
+        var patientPesels = await GetRoleUserPeselsAsync("Pacjent");
+        if (patientPesels.Count == 0)
+        {
+            return [];
+        }
+
+        var patients = await _dbContext.Patients
+            .AsNoTracking()
+            .Where(patient => patientPesels.Contains(patient.PESEL))
+            .OrderBy(patient => patient.LastName)
+            .ThenBy(patient => patient.FirstName)
+            .Select(patient => new PatientDto
+            {
+                PatientId = patient.PatientId,
+                FirstName = patient.FirstName,
+                LastName = patient.LastName,
+                PESEL = patient.PESEL,
+                InsuranceNumber = patient.InsuranceNumber,
+                BirthDate = patient.BirthDate
+            })
+            .ToListAsync(cancellationToken);
+
+        return patients;
+    }
+
+    private async Task<IReadOnlyList<DoctorDto>> GetDoctorsWithDoctorAccountsAsync(CancellationToken cancellationToken)
+    {
+        var doctorPesels = await GetRoleUserPeselsAsync("Lekarz");
+        if (doctorPesels.Count == 0)
+        {
+            return [];
+        }
+
+        await EnsureDoctorProfilesForDoctorAccountsAsync(doctorPesels, cancellationToken);
+
+        var doctors = await _dbContext.Doctors
+            .AsNoTracking()
+            .Where(doctor => doctorPesels.Contains(doctor.PESEL))
+            .OrderBy(doctor => doctor.LastName)
+            .ThenBy(doctor => doctor.FirstName)
+            .Select(doctor => new DoctorDto
+            {
+                DoctorId = doctor.DoctorId,
+                FirstName = doctor.FirstName,
+                LastName = doctor.LastName,
+                PESEL = doctor.PESEL,
+                BirthDate = doctor.BirthDate,
+                PwzNumber = doctor.PwzNumber,
+                Specialization = doctor.Specialization
+            })
+            .ToListAsync(cancellationToken);
+
+        return doctors;
+    }
+
+    private async Task<HashSet<string>> GetRoleUserPeselsAsync(string roleName)
+    {
+        var users = await _userManager.GetUsersInRoleAsync(roleName);
+        var pesels = new HashSet<string>();
+
+        foreach (var user in users)
+        {
+            var claims = await _userManager.GetClaimsAsync(user);
+            var pesel = claims.FirstOrDefault(claim => claim.Type == "PatientPesel")?.Value;
+            if (!string.IsNullOrWhiteSpace(pesel))
+            {
+                pesels.Add(pesel.Trim());
+            }
+        }
+
+        return pesels;
+    }
+
+    private async Task EnsureDoctorProfilesForDoctorAccountsAsync(
+        IReadOnlySet<string> doctorPesels,
+        CancellationToken cancellationToken)
+    {
+        var existingDoctorPesels = await _dbContext.Doctors
+            .Where(doctor => doctorPesels.Contains(doctor.PESEL))
+            .Select(doctor => doctor.PESEL)
+            .ToListAsync(cancellationToken);
+
+        var missingDoctorPesels = doctorPesels.Except(existingDoctorPesels).ToList();
+        if (missingDoctorPesels.Count == 0)
+        {
+            return;
+        }
+
+        var sourcePatients = await _dbContext.Patients
+            .AsNoTracking()
+            .Where(patient => missingDoctorPesels.Contains(patient.PESEL))
+            .ToListAsync(cancellationToken);
+
+        foreach (var patient in sourcePatients)
+        {
+            _dbContext.Doctors.Add(new Doctor
+            {
+                FirstName = patient.FirstName,
+                LastName = patient.LastName,
+                PESEL = patient.PESEL,
+                BirthDate = patient.BirthDate,
+                PwzNumber = "BRAK",
+                Specialization = "Brak specjalizacji"
+            });
+        }
+
+        if (sourcePatients.Count > 0)
+        {
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("Utworzono brakujące profile lekarzy dla {DoctorProfilesCount} kont z rolą Lekarz.", sourcePatients.Count);
+        }
     }
 }

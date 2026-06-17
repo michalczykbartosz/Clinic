@@ -10,62 +10,81 @@
     <link rel="stylesheet" href="~/ClinicManager.styles.css" asp-append-version="true" />
 </head>
 <body>
+    @{
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    }
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm app-navbar mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">ClinicManager</a>
+                <a class="navbar-brand app-brand" asp-area="" asp-controller="Home" asp-action="Index">ClinicManager</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                    <ul class="navbar-nav app-nav-list flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link app-nav-link @(currentController == "Home" ? "active" : "")" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         @if (User.IsInRole("Admin") || User.IsInRole("Rejestratorka") || User.IsInRole("Lekarz"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Patients" asp-action="Index">Pacjenci</a>
+                                <a class="nav-link app-nav-link @(currentController == "Patients" ? "active" : "")" asp-area="" asp-controller="Patients" asp-action="Index">Pacjenci</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Visits" asp-action="Index">Wizyty</a>
+                                <a class="nav-link app-nav-link @(currentController == "Visits" ? "active" : "")" asp-area="" asp-controller="Visits" asp-action="Index">Wizyty</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Schedule" asp-action="Index">Grafik</a>
+                                <a class="nav-link app-nav-link @(currentController == "Schedule" ? "active" : "")" asp-area="" asp-controller="Schedule" asp-action="Index">Grafik</a>
                             </li>
                         }
                         @if (User.IsInRole("Pacjent"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Visits" asp-action="Index">Przejdź do wizyt</a>
+                                <a class="nav-link app-nav-link @(currentController == "Visits" ? "active" : "")" asp-area="" asp-controller="Visits" asp-action="Index">Przejdź do wizyt</a>
                             </li>
                         }
                         @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="AdminUsers" asp-action="GetRoles">Konta</a>
+                                <a class="nav-link app-nav-link @(currentController == "AdminUsers" ? "active" : "")" asp-area="" asp-controller="AdminUsers" asp-action="GetRoles">Konta</a>
                             </li>
                         }
                         @if (User.IsInRole("Admin") || User.IsInRole("Lekarz"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Medication" asp-action="Index">Leki</a>
+                                <a class="nav-link app-nav-link @(currentController == "Medication" ? "active" : "")" asp-area="" asp-controller="Medication" asp-action="Index">Leki</a>
+                            </li>
+                        }
+                        @if (User.IsInRole("Lekarz"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link app-nav-link @(currentController == "DoctorProfile" ? "active" : "")" asp-area="" asp-controller="DoctorProfile" asp-action="Edit">Mój profil</a>
                             </li>
                         }
                         @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Report" asp-action="Index">Raporty</a>
+                                <a class="nav-link app-nav-link @(currentController == "Report" ? "active" : "")" asp-area="" asp-controller="Report" asp-action="Index">Raporty</a>
                             </li>
                         }
                     </ul>
                     @if (User.Identity != null && User.Identity.IsAuthenticated)
                     {
-                        <ul class="navbar-nav">
+                        var currentRoles = new[] { "Admin", "Lekarz", "Rejestratorka", "Pacjent" }
+                            .Where(User.IsInRole)
+                            .ToList();
+                        var currentRoleText = currentRoles.Count == 0 ? "Brak roli" : string.Join(", ", currentRoles);
+
+                        <ul class="navbar-nav app-user-nav">
+                            <li class="nav-item d-flex align-items-center">
+                                <span class="navbar-text app-user-chip">
+                                    Zalogowano: <strong>@(User.Identity.Name ?? "użytkownik")</strong> (@currentRoleText)
+                                </span>
+                            </li>
                             <li class="nav-item">
                                 <form asp-action="Logout" asp-controller="Account" method="post">
-                                    <button class="nav-link btn btn-link text-dark" type="submit">Wyloguj</button>
+                                    <button class="nav-link btn btn-link app-nav-link app-logout-link" type="submit">Wyloguj</button>
                                 </form>
                             </li>
                         </ul>

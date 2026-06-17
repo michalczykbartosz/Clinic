@@ -21,6 +21,108 @@ body {
   margin-bottom: 60px;
 }
 
+.app-navbar {
+  background: rgba(255, 255, 255, .96);
+  border-bottom: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .05);
+  backdrop-filter: blur(10px);
+}
+
+.app-navbar .container-fluid {
+  gap: 1rem;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+.app-brand {
+  color: #0F172A;
+  font-weight: 750;
+  letter-spacing: 0;
+  margin-right: .75rem;
+}
+
+.app-brand:hover {
+  color: #2563EB;
+}
+
+.app-nav-list,
+.app-user-nav {
+  align-items: center;
+  gap: .25rem;
+}
+
+.app-nav-link {
+  color: #475569;
+  border-radius: 8px;
+  font-size: .9rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: .58rem .82rem !important;
+  transition: background .18s, color .18s, box-shadow .18s;
+}
+
+.app-nav-link:hover,
+.app-nav-link:focus {
+  color: #1D4ED8;
+  background: #EFF6FF;
+}
+
+.app-navbar .app-nav-link.active,
+.app-navbar .app-nav-link.active:hover,
+.app-navbar .app-nav-link.active:focus,
+.app-navbar .app-nav-link:active {
+  color: #fff !important;
+  background: #2563EB;
+  box-shadow: 0 3px 10px rgba(37, 99, 235, .22);
+}
+
+.app-user-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 360px;
+  min-height: 34px;
+  padding: .42rem .75rem;
+  color: #475569;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  font-size: .78rem;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-user-chip strong {
+  color: #0F172A;
+  font-weight: 700;
+}
+
+.app-logout-link {
+  border: 0;
+  text-decoration: none;
+}
+
+@media (max-width: 767.98px) {
+  .app-nav-list,
+  .app-user-nav {
+    align-items: stretch;
+    gap: .35rem;
+    padding-top: .75rem;
+  }
+
+  .app-nav-link {
+    width: 100%;
+    text-align: left;
+  }
+
+  .app-user-chip {
+    max-width: 100%;
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
   color: var(--bs-secondary-color);
   text-align: end;

@@ -11,8 +11,10 @@ using Microsoft.Data.Sqlite;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
+using System.Security.Claims;
 
 namespace ClinicManager.Tests;
 
@@ -181,6 +183,11 @@ public class PatientDetailsTests
             return Task.FromResult(Patient);
         }
 
+        public Task<PatientDto?> GetByPeselAsync(string pesel, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<PatientDto> CreateAsync(UpsertPatientDto dto, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
@@ -217,7 +224,26 @@ public class PatientDetailsTests
             throw new NotImplementedException();
         }
 
-        public Task<IReadOnlyList<VisitListItemDto>> GetListAsync(CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<VisitListItemDto>> GetListAsync(
+            string? query = null,
+            VisitState? status = null,
+            CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IReadOnlyList<VisitListItemDto>> GetListForPatientPeselAsync(
+            string pesel,
+            VisitState? status = null,
+            CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IReadOnlyList<VisitListItemDto>> GetDoctorScheduleAsync(
+            int doctorId,
+            DateOnly date,
+            CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -243,6 +269,11 @@ public class PatientDetailsTests
         }
 
         public Task<bool> UpdateStatusAsync(int visitId, VisitState visitStatus, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> UpdatePaymentAsync(int visitId, bool isPaid, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -376,10 +407,13 @@ public class VisitsControllerTests
             ]
         };
 
+        await using var dbContext = await CreateVisitDbContextAsync();
+        var userManager = CreateVisitUserManager();
+
         var controller = new VisitsController(
             new VisitFormVisitService(),
-            patientService,
-            doctorService,
+            userManager,
+            dbContext,
             NullLogger<VisitsController>.Instance);
 
         var result = await controller.Create(CancellationToken.None);
@@ -396,11 +430,13 @@ public class VisitsControllerTests
     [Test]
     public async Task Create_Post_WhenModelIsValid_CreatesVisitAndRedirectsToIndex()
     {
+        await using var dbContext = await CreateVisitDbContextAsync();
+        var userManager = CreateVisitUserManager();
         var visitService = new VisitFormVisitService();
         var controller = new VisitsController(
             visitService,
-            new VisitFormPatientService(),
-            new VisitFormDoctorService(),
+            userManager,
+            dbContext,
             NullLogger<VisitsController>.Instance)
         {
             TempData = new TempDataDictionary(
@@ -431,11 +467,13 @@ public class VisitsControllerTests
     [Test]
     public async Task UpdateStatus_WhenVisitExists_UpdatesStatusAndRedirectsToIndex()
     {
+        await using var dbContext = await CreateVisitDbContextAsync();
+        var userManager = CreateVisitUserManager();
         var visitService = new VisitFormVisitService();
         var controller = new VisitsController(
             visitService,
-            new VisitFormPatientService(),
-            new VisitFormDoctorService(),
+            userManager,
+            dbContext,
             NullLogger<VisitsController>.Instance)
         {
             TempData = new TempDataDictionary(
@@ -446,6 +484,8 @@ public class VisitsControllerTests
         var result = await controller.UpdateStatus(
             10,
             new UpdateVisitStatusDto { VisitStatus = VisitState.Finished },
+            null,
+            null,
             CancellationToken.None);
 
         var redirectResult = result as RedirectToActionResult;
@@ -458,19 +498,47 @@ public class VisitsControllerTests
     [Test]
     public async Task UpdateStatus_WhenVisitDoesNotExist_ReturnsNotFound()
     {
+        await using var dbContext = await CreateVisitDbContextAsync();
+        var userManager = CreateVisitUserManager();
         var visitService = new VisitFormVisitService { UpdateStatusResult = false };
         var controller = new VisitsController(
             visitService,
-            new VisitFormPatientService(),
-            new VisitFormDoctorService(),
+            userManager,
+            dbContext,
             NullLogger<VisitsController>.Instance);
 
         var result = await controller.UpdateStatus(
             999,
             new UpdateVisitStatusDto { VisitStatus = VisitState.Canceled },
+            null,
+            null,
             CancellationToken.None);
 
         Assert.That(result, Is.InstanceOf<NotFoundResult>());
+    }
+
+    private static async Task<ClinicDbContext> CreateVisitDbContextAsync()
+    {
+        var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+
+        var options = new DbContextOptionsBuilder<ClinicDbContext>()
+            .UseSqlite(connection)
+            .Options;
+
+        var dbContext = new ClinicDbContext(options);
+        await dbContext.Database.EnsureCreatedAsync();
+
+        return dbContext;
+    }
+
+    private static TestUserManager CreateVisitUserManager()
+    {
+        var userManager = new TestUserManager();
+        userManager.AddUserToRole("Pacjent", "90051401234");
+        userManager.AddUserToRole("Lekarz", "75081911223");
+
+        return userManager;
     }
 
     private sealed class VisitFormPatientService : IPatientService
@@ -488,6 +556,11 @@ public class VisitsControllerTests
         }
 
         public Task<PatientDto?> GetByIdAsync(int patientId, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<PatientDto?> GetByPeselAsync(string pesel, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -543,9 +616,28 @@ public class VisitsControllerTests
             throw new NotImplementedException();
         }
 
-        public Task<IReadOnlyList<VisitListItemDto>> GetListAsync(CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<VisitListItemDto>> GetListAsync(
+            string? query = null,
+            VisitState? status = null,
+            CancellationToken cancellationToken = default)
         {
             return Task.FromResult<IReadOnlyList<VisitListItemDto>>(Array.Empty<VisitListItemDto>());
+        }
+
+        public Task<IReadOnlyList<VisitListItemDto>> GetListForPatientPeselAsync(
+            string pesel,
+            VisitState? status = null,
+            CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IReadOnlyList<VisitListItemDto>> GetDoctorScheduleAsync(
+            int doctorId,
+            DateOnly date,
+            CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
         }
 
         public Task<VisitDto?> GetByIdAsync(int visitId, CancellationToken cancellationToken = default)
@@ -584,6 +676,11 @@ public class VisitsControllerTests
 
             return Task.FromResult(UpdateStatusResult);
         }
+
+        public Task<bool> UpdatePaymentAsync(int visitId, bool isPaid, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     private sealed class TestTempDataProvider : ITempDataProvider
@@ -596,6 +693,121 @@ public class VisitsControllerTests
         public void SaveTempData(HttpContext context, IDictionary<string, object> values)
         {
         }
+    }
+}
+
+internal sealed class TestUserManager : UserManager<IdentityUser>
+{
+    private readonly Dictionary<string, List<IdentityUser>> _usersByRole = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, IList<Claim>> _claimsByUserId = new();
+
+    public TestUserManager()
+        : base(
+            new TestUserStore(),
+            null!,
+            new PasswordHasher<IdentityUser>(),
+            [],
+            [],
+            new UpperInvariantLookupNormalizer(),
+            new IdentityErrorDescriber(),
+            null!,
+            NullLogger<UserManager<IdentityUser>>.Instance)
+    {
+    }
+
+    public void AddUserToRole(string roleName, string pesel)
+    {
+        var user = new IdentityUser
+        {
+            Id = Guid.NewGuid().ToString(),
+            UserName = $"{roleName}-{pesel}"
+        };
+
+        if (!_usersByRole.TryGetValue(roleName, out var users))
+        {
+            users = [];
+            _usersByRole[roleName] = users;
+        }
+
+        users.Add(user);
+        _claimsByUserId[user.Id] = [new Claim("PatientPesel", pesel)];
+    }
+
+    public override Task<IList<IdentityUser>> GetUsersInRoleAsync(string roleName)
+    {
+        var users = _usersByRole.TryGetValue(roleName, out var roleUsers)
+            ? roleUsers.ToList()
+            : [];
+
+        return Task.FromResult<IList<IdentityUser>>(users);
+    }
+
+    public override Task<IList<Claim>> GetClaimsAsync(IdentityUser user)
+    {
+        var claims = _claimsByUserId.TryGetValue(user.Id, out var userClaims)
+            ? userClaims.ToList()
+            : [];
+
+        return Task.FromResult<IList<Claim>>(claims);
+    }
+}
+
+internal sealed class TestUserStore : IUserStore<IdentityUser>
+{
+    public Task<IdentityResult> CreateAsync(IdentityUser user, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(IdentityResult.Success);
+    }
+
+    public Task<IdentityResult> DeleteAsync(IdentityUser user, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(IdentityResult.Success);
+    }
+
+    public void Dispose()
+    {
+    }
+
+    public Task<IdentityUser?> FindByIdAsync(string userId, CancellationToken cancellationToken)
+    {
+        return Task.FromResult<IdentityUser?>(null);
+    }
+
+    public Task<IdentityUser?> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
+    {
+        return Task.FromResult<IdentityUser?>(null);
+    }
+
+    public Task<string?> GetNormalizedUserNameAsync(IdentityUser user, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(user.NormalizedUserName);
+    }
+
+    public Task<string> GetUserIdAsync(IdentityUser user, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(user.Id);
+    }
+
+    public Task<string?> GetUserNameAsync(IdentityUser user, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(user.UserName);
+    }
+
+    public Task SetNormalizedUserNameAsync(IdentityUser user, string? normalizedName, CancellationToken cancellationToken)
+    {
+        user.NormalizedUserName = normalizedName;
+        return Task.CompletedTask;
+    }
+
+    public Task SetUserNameAsync(IdentityUser user, string? userName, CancellationToken cancellationToken)
+    {
+        user.UserName = userName;
+        return Task.CompletedTask;
+    }
+
+    public Task<IdentityResult> UpdateAsync(IdentityUser user, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(IdentityResult.Success);
     }
 }
 
@@ -648,7 +860,26 @@ public class VisitsApiControllerTests
             throw new NotImplementedException();
         }
 
-        public Task<IReadOnlyList<VisitListItemDto>> GetListAsync(CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<VisitListItemDto>> GetListAsync(
+            string? query = null,
+            VisitState? status = null,
+            CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IReadOnlyList<VisitListItemDto>> GetListForPatientPeselAsync(
+            string pesel,
+            VisitState? status = null,
+            CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IReadOnlyList<VisitListItemDto>> GetDoctorScheduleAsync(
+            int doctorId,
+            DateOnly date,
+            CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -681,6 +912,14 @@ public class VisitsApiControllerTests
         public Task<bool> UpdateStatusAsync(
             int visitId,
             VisitState visitStatus,
+            CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> UpdatePaymentAsync(
+            int visitId,
+            bool isPaid,
             CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
