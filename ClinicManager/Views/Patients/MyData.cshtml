@@ -1,0 +1,55 @@
+@model ClinicManager.DTOs.UpsertPatientDto
+
+@{
+    ViewData["Title"] = "Moje dane";
+    var patientAccessMessage = ViewData["PatientAccessMessage"] as string;
+}
+
+<div class="form-wrapper">
+    <div class="page-header">
+        <div class="page-header__left">
+            <div class="page-header__icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="page-header__title">Moje dane</h1>
+                <p class="page-header__sub">Dane powiązane z Twoją kartoteką pacjenta</p>
+            </div>
+        </div>
+        <a asp-controller="Visits" asp-action="Index" class="btn btn-secondary">Moje wizyty</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] is string successMessage)
+    {
+        <div class="alert alert-success">@successMessage</div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(patientAccessMessage))
+    {
+        <div class="alert alert-danger">@patientAccessMessage</div>
+    }
+
+    <div class="form-card">
+        <form asp-action="MyData" method="post">
+            <div class="form-section">
+                <h2 class="form-section__title"><span class="form-section__number">01</span>Dane pacjenta</h2>
+                <partial name="_PatientForm" model="Model" />
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Zapisz zmiany</button>
+                <a class="btn btn-secondary" asp-controller="Visits" asp-action="Index">Anuluj</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<partial name="_PatientFormStyles" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

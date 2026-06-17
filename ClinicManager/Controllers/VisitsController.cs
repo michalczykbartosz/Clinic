@@ -151,8 +151,8 @@ public class VisitsController : Controller
         CreateVisitViewModel model,
         CancellationToken cancellationToken)
     {
-        var patients = await GetPatientsWithPatientAccountsAsync(cancellationToken);
-        var doctors = await GetDoctorsWithDoctorAccountsAsync(cancellationToken);
+        var patients = await GetVisitPatientsAsync(cancellationToken);
+        var doctors = await GetAvailableDoctorsAsync(cancellationToken);
 
         model.Patients = patients
             .Select(patient => new SelectListItem
@@ -173,17 +173,17 @@ public class VisitsController : Controller
         return model;
     }
 
-    private async Task<IReadOnlyList<PatientDto>> GetPatientsWithPatientAccountsAsync(CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<PatientDto>> GetVisitPatientsAsync(CancellationToken cancellationToken)
     {
-        var patientPesels = await GetRoleUserPeselsAsync("Pacjent");
-        if (patientPesels.Count == 0)
+        var employeePesels = new HashSet<string>();
+        foreach (var role in new[] { "Admin", "Lekarz", "Rejestratorka" })
         {
-            return [];
+            employeePesels.UnionWith(await GetRoleUserPeselsAsync(role));
         }
 
         var patients = await _dbContext.Patients
             .AsNoTracking()
-            .Where(patient => patientPesels.Contains(patient.PESEL))
+            .Where(patient => !employeePesels.Contains(patient.PESEL))
             .OrderBy(patient => patient.LastName)
             .ThenBy(patient => patient.FirstName)
             .Select(patient => new PatientDto
@@ -200,19 +200,16 @@ public class VisitsController : Controller
         return patients;
     }
 
-    private async Task<IReadOnlyList<DoctorDto>> GetDoctorsWithDoctorAccountsAsync(CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<DoctorDto>> GetAvailableDoctorsAsync(CancellationToken cancellationToken)
     {
         var doctorPesels = await GetRoleUserPeselsAsync("Lekarz");
-        if (doctorPesels.Count == 0)
+        if (doctorPesels.Count > 0)
         {
-            return [];
+            await EnsureDoctorProfilesForDoctorAccountsAsync(doctorPesels, cancellationToken);
         }
-
-        await EnsureDoctorProfilesForDoctorAccountsAsync(doctorPesels, cancellationToken);
 
         var doctors = await _dbContext.Doctors
             .AsNoTracking()
-            .Where(doctor => doctorPesels.Contains(doctor.PESEL))
             .OrderBy(doctor => doctor.LastName)
             .ThenBy(doctor => doctor.FirstName)
             .Select(doctor => new DoctorDto

@@ -70,7 +70,7 @@ public class PatientService : IPatientService
 
     public async Task<PatientDto> CreateAsync(UpsertPatientDto dto, CancellationToken cancellationToken = default)
     {
-       
+        Normalize(dto);
 
         var peselExists = await _dbContext.Patients
             .AnyAsync(patient => patient.PESEL == dto.PESEL, cancellationToken);
@@ -91,12 +91,22 @@ public class PatientService : IPatientService
 
     public async Task<bool> UpdateAsync(int patientId, UpsertPatientDto dto, CancellationToken cancellationToken = default)
     {
+        Normalize(dto);
+
         var patient = await _dbContext.Patients
             .FirstOrDefaultAsync(patient => patient.PatientId == patientId, cancellationToken);
 
         if (patient is null)
         {
             return false;
+        }
+
+        var peselTaken = await _dbContext.Patients
+            .AnyAsync(patient => patient.PatientId != patientId && patient.PESEL == dto.PESEL, cancellationToken);
+
+        if (peselTaken)
+        {
+            throw new InvalidOperationException("Pacjent o podanym numerze PESEL już istnieje.");
         }
 
         _patientMapper.UpdateEntity(dto, patient);
@@ -143,5 +153,13 @@ public class PatientService : IPatientService
 
         _logger.LogInformation("Usunięto pacjenta {PatientId}", patient.PatientId);
         return true;
+    }
+
+    private static void Normalize(UpsertPatientDto dto)
+    {
+        dto.FirstName = dto.FirstName.Trim();
+        dto.LastName = dto.LastName.Trim();
+        dto.PESEL = dto.PESEL.Trim();
+        dto.InsuranceNumber = dto.InsuranceNumber.Trim();
     }
 }

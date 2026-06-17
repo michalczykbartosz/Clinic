@@ -75,6 +75,22 @@ public class MedicationController : Controller
     {
         return View();
     }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int medicationId, CancellationToken cancellationToken)
+    {
+        var (success, errorMessage) = await _medicationService.DeleteMedicationAsync(medicationId, cancellationToken);
+        if (success)
+        {
+            TempData["SuccessMessage"] = "Lek został usunięty.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        _logger.LogWarning("Nie udało się usunąć leku {MedicationId}: {ErrorMessage}", medicationId, errorMessage);
+        TempData["ErrorMessage"] = errorMessage;
+        return RedirectToAction(nameof(Index));
+    }
     
     
 }

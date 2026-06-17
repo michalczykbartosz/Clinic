@@ -35,6 +35,25 @@ public class AdminUsersController : Controller
     }
 
     [HttpGet]
+    public async Task<IActionResult> Employees()
+    {
+        var employeeRoles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Admin",
+            "Lekarz",
+            "Rejestratorka"
+        };
+
+        var dtos = await _userManagementService.GetAllUsersWithRolesAsync();
+        var employees = (await _userManagementService.GetEmployeesAsync())
+            .Where(user => user.Roles.Any(role => employeeRoles.Contains(role)))
+            .ToList();
+
+        ViewData["TotalUsersCount"] = dtos.Count;
+        return View(employees);
+    }
+
+    [HttpGet]
     public async Task<IActionResult> EditRoles(string id)
     {
         var dto = await _userManagementService.GetUserRolesAsync(id);

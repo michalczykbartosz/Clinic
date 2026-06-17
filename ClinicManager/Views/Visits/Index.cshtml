@@ -7,7 +7,7 @@
     var canCreateVisit = User.IsInRole("Admin") || User.IsInRole("Rejestratorka");
     var canUpdateVisitStatus = User.IsInRole("Admin") || User.IsInRole("Rejestratorka") || User.IsInRole("Lekarz");
     var canManagePayments = User.IsInRole("Admin") || User.IsInRole("Rejestratorka");
-    var canManageClinicalNotes = User.IsInRole("Lekarz");
+    var canManageClinicalNotes = User.IsInRole("Admin") || User.IsInRole("Lekarz");
     var query = ViewData["Query"] as string ?? string.Empty;
     var selectedStatus = ViewData["Status"] as VisitState?;
     var isPatientView = ViewData["IsPatientView"] as bool? == true;

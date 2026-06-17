@@ -85,15 +85,43 @@
                 </div>
             </div>
 
+            <div class="info-card">
+                <div class="info-card__icon info-card__icon--scope">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 3v18h18"/>
+                        <path d="M7 15l4-4 3 3 5-7"/>
+                    </svg>
+                </div>
+                <div class="info-card__content">
+                    <span class="info-card__label">Zakres raportu</span>
+                    <span class="info-card__value">@Model.ScopeLabel</span>
+                </div>
+            </div>
+
         </div>
 
         <div class="cost-card">
-            <div class="cost-card__label">Łączny koszt leczenia</div>
+            <div class="cost-card__label">@Model.ScopeLabel</div>
             <div class="cost-card__amount">@Model.OverallCost.ToString("N2") <span class="cost-card__currency">PLN</span></div>
             <div class="cost-card__period">
                 za okres @Model.StartDate.ToString("dd.MM.yyyy") – @Model.EndDate.ToString("dd.MM.yyyy")
             </div>
         </div>
+
+        @if (Model.Scope == ClinicManager.DTOs.ReportCostScope.VisitsAndProcedures)
+        {
+            <div class="breakdown-grid">
+                <div class="breakdown-card">
+                    <span>Wizyty</span>
+                    <strong>@Model.VisitCost.ToString("N2") PLN</strong>
+                </div>
+                <div class="breakdown-card">
+                    <span>Procedury</span>
+                    <strong>@Model.ProcedureCost.ToString("N2") PLN</strong>
+                </div>
+            </div>
+        }
 
         <div class="page-actions">
             <a asp-action="Index" asp-controller="Report" class="btn btn-secondary">
@@ -178,7 +206,7 @@
     
     .info-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
         margin-bottom: 1.25rem;
     }
@@ -209,6 +237,7 @@
     .info-card__icon--patient { background: #F0FDF4; color: #16A34A; }
     .info-card__icon--doctor  { background: #FFF7ED; color: #EA580C; }
     .info-card__icon--date    { background: #EFF6FF; color: #2563EB; }
+    .info-card__icon--scope   { background: #F5F3FF; color: #7C3AED; }
 
     .info-card__content {
         display: flex;
@@ -274,6 +303,39 @@
         margin-top: .75rem;
     }
 
+    .breakdown-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+        margin: -0.25rem 0 1.5rem;
+    }
+
+    .breakdown-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
+
+    .breakdown-card span {
+        display: block;
+        color: #64748B;
+        font-size: .76rem;
+        font-weight: 700;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        margin-bottom: .35rem;
+    }
+
+    .breakdown-card strong {
+        display: block;
+        color: #0F172A;
+        font-size: 1.25rem;
+        font-weight: 750;
+        font-variant-numeric: tabular-nums;
+    }
+
     page-actions {
         display: flex;
         align-items: center;
@@ -323,6 +385,7 @@
     
     @@media (max-width: 580px) {
         .info-grid { grid-template-columns: 1fr; }
+        .breakdown-grid { grid-template-columns: 1fr; }
         .cost-card__amount { font-size: 2.25rem; }
         .page-actions { flex-direction: column-reverse; width: 100%; }
         .btn { justify-content: center; width: 100%; }

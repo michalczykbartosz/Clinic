@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 namespace ClinicManager.Controllers;
 
-[Authorize(Roles="Lekarz")]
+[Authorize(Roles = "Admin,Lekarz")]
 public class ClinicalNoteController : Controller
 {
     private readonly IClinicalNoteService _noteService;

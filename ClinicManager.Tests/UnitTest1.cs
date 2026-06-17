@@ -70,6 +70,9 @@ public class PatientDetailsTests
                     }
                 ]
             },
+            new StubUserManagementService(),
+            new TestUserManager(),
+            null!,
             NullLogger<PatientsController>.Instance);
 
         var result = await controller.Details(1, CancellationToken.None);
@@ -93,6 +96,9 @@ public class PatientDetailsTests
             new StubPatientService(),
             new StubVisitService(),
             new StubPatientDocumentService(),
+            new StubUserManagementService(),
+            new TestUserManager(),
+            null!,
             NullLogger<PatientsController>.Instance);
 
         var result = await controller.Details(999, CancellationToken.None);
@@ -117,6 +123,9 @@ public class PatientDetailsTests
             },
             new StubVisitService(),
             new StubPatientDocumentService(),
+            new StubUserManagementService(),
+            new TestUserManager(),
+            null!,
             NullLogger<PatientsController>.Instance);
 
         var result = await controller.Record(2, CancellationToken.None);
@@ -138,6 +147,9 @@ public class PatientDetailsTests
             patientService,
             new StubVisitService(),
             new StubPatientDocumentService(),
+            new StubUserManagementService(),
+            new TestUserManager(),
+            null!,
             NullLogger<PatientsController>.Instance)
         {
             TempData = new TempDataDictionary(
@@ -310,6 +322,39 @@ public class PatientDetailsTests
         }
     }
 
+    private sealed class StubUserManagementService : IUserManagementService
+    {
+        public Task<List<UserRolesDto>> GetAllUsersWithRolesAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<EmployeeDto>> GetEmployeesAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<UserRolesDto?> GetUserRolesAsync(string id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<(bool Success, string ErrorMessage)> EditRolesAsync(string id, List<string> roleNames)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<(bool Success, string ErrorMessage)> DeleteUserAsync(string id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<HashSet<string>> GetEmployeePatientPeselsAsync()
+        {
+            return Task.FromResult(new HashSet<string>());
+        }
+    }
+
     private sealed class TestTempDataProvider : ITempDataProvider
     {
         public IDictionary<string, object> LoadTempData(HttpContext context)
@@ -424,7 +469,7 @@ public class VisitsControllerTests
         var model = viewResult!.Model as CreateVisitViewModel;
         Assert.That(model, Is.Not.Null);
         Assert.That(model!.Patients, Has.Count.EqualTo(1));
-        Assert.That(model.Doctors, Has.Count.EqualTo(1));
+        Assert.That(model.Doctors, Has.Count.EqualTo(2));
     }
 
     [Test]
@@ -964,8 +1009,8 @@ public class VisitServiceActiveVisitsTests
             status => status is VisitState.Planned or VisitState.InProgress));
         Assert.That(visits[0].PatientFullName, Is.EqualTo("Jan Nowak"));
         Assert.That(visits[0].PatientPESEL, Is.EqualTo("90051401234"));
-        Assert.That(visits[0].DoctorFullName, Is.EqualTo("Ewa Kowalczyk"));
-        Assert.That(visits[0].DoctorSpecialization, Is.EqualTo("Neurolog"));
+        Assert.That(visits[0].DoctorFullName, Is.EqualTo("Adam Wiśniewski"));
+        Assert.That(visits[0].DoctorSpecialization, Is.EqualTo("Kardiolog"));
     }
 }
 
